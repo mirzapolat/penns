@@ -12,10 +12,12 @@ struct ArchiveView: View {
                 } label: {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 12, weight: .semibold))
-                        .frame(width: 26, height: 26)
+                        .frame(width: NoteScreen.pillHeight, height: NoteScreen.pillHeight)
+                        .contentShape(Circle())
                 }
                 .buttonStyle(.plain)
                 .glassEffect(.regular.interactive(), in: .circle)
+                .contentShape(Circle())
                 .keyboardShortcut(.cancelAction)
                 .help("Back to note")
                 .accessibilityLabel("Back to note")

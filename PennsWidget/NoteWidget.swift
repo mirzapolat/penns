@@ -97,6 +97,7 @@ struct NoteWidget: Widget {
 
 struct NoteWidgetView: View {
     let entry: NoteEntry
+    private let style = NoteStyle.current
 
     @Environment(\.widgetFamily) private var family
 
@@ -104,7 +105,7 @@ struct NoteWidgetView: View {
         VStack(alignment: .leading, spacing: 0) {
             if entry.isEmpty {
                 Text("Tap to write")
-                    .font(.system(size: textSize))
+                    .font(font())
                     .foregroundStyle(.tertiary)
             } else {
                 VStack(alignment: .leading, spacing: 3) {
@@ -129,15 +130,12 @@ struct NoteWidgetView: View {
         case .text(let text):
             if let heading = Markdown.heading(of: text) {
                 Text(heading.text)
-                    .font(.system(
-                        size: textSize + [4, 2, 0][heading.level - 1],
-                        weight: heading.level == 3 ? .semibold : .bold
-                    ))
+                    .font(font(scale: NoteStyle.headingScale(heading.level), weight: heading.level == 3 ? .semibold : .bold))
                     .foregroundStyle(.primary)
                     .widgetAccentable()
             } else {
                 Text(text.isEmpty ? " " : text.replacingOccurrences(of: "\t", with: "    "))
-                    .font(.system(size: textSize))
+                    .font(font())
                     .foregroundStyle(.primary)
                     .widgetAccentable()
             }
@@ -149,7 +147,7 @@ struct NoteWidgetView: View {
                         .foregroundStyle(item.isChecked ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
                         .widgetAccentable()
                     Text(item.title)
-                        .font(.system(size: textSize))
+                        .font(font())
                         .strikethrough(item.isChecked)
                         .foregroundStyle(.primary)
                         .opacity(item.isChecked ? 0.8 : 1)
@@ -193,8 +191,12 @@ struct NoteWidgetView: View {
         }
     }
 
-    /// One text size per widget family; no headings.
-    private var textSize: CGFloat { family == .systemSmall ? 13 : 14 }
+    /// The user's font and size, a touch smaller in the small widget.
+    private var textSize: CGFloat { family == .systemSmall ? style.size - 1 : style.size }
+
+    private func font(scale: CGFloat = 1, weight: Font.Weight = .regular) -> Font {
+        NoteStyle(font: style.font, size: textSize).swiftUIFont(scale: scale, weight: weight)
+    }
 
     private var maxLines: Int {
         switch family {

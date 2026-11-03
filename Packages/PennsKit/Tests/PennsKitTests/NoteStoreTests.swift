@@ -211,4 +211,23 @@ struct Fixture {
         let later = Lifecycle.expiryLabel(now.addingTimeInterval(2 * 86400 + 3600), now: now, calendar: calendar)
         #expect(later.hasPrefix("until ") && later.contains(":"))
     }
+
+    @Test func clearingSubstantialNoteKeepsCopyInArchive() {
+        let f = Fixture()
+        let note = f.store.activeNote()
+        f.store.setText("This is actually important, keep it", of: note)
+        let copy = f.store.setText("", of: note)
+        #expect(copy?.text == "This is actually important, keep it")
+        #expect(f.store.archivedNotes().map(\.text) == ["This is actually important, keep it"])
+        #expect(f.store.defaultProfile().clearedCount == 0)
+        #expect(f.activeCount() == 1)
+    }
+
+    @Test func deletingCharacterByCharacterKeepsNoCopy() {
+        let f = Fixture()
+        let note = f.store.activeNote()
+        f.store.setText("short", of: note)
+        f.store.setText("", of: note)
+        #expect(f.store.archivedNotes().isEmpty)
+    }
 }

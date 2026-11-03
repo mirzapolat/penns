@@ -47,9 +47,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        model?.flush()
+    }
+
     func application(_ application: NSApplication, open urls: [URL]) {
-        // penns://note — sent by the widget.
+        // penns://note (widget) opens the note; penns://archive opens the archive.
         statusController.show()
+        if urls.contains(where: { $0.host == "archive" }) {
+            model.showingArchive = true
+        }
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {

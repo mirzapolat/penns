@@ -123,10 +123,29 @@ public final class NoteStore {
 
     // MARK: Editing
 
-    public func setText(_ text: String, of note: Note) {
-        guard note.text != text else { return }
+    /// Edits that clear at least this many characters at once leave a copy in the archive.
+    public static let clearSafetyThreshold = 20
+
+    /// Updates the text. If one edit wipes a substantial note (select-all + delete,
+    /// a run of undos, a bug), the previous text is kept in the archive so it can
+    /// be restored. Deleting character by character doesn't trigger this.
+    @discardableResult
+    public func setText(_ text: String, of note: Note) -> Note? {
+        guard note.text != text else { return nil }
+        let previous = note.text
         note.text = text
         note.updatedAt = now
+
+        let removed = previous.count - text.count
+        guard note.isActive,
+              text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              removed >= Self.clearSafetyThreshold else { return nil }
+        let copy = Note(text: previous, profile: nil, isActive: false, now: now)
+        copy.createdAt = note.createdAt
+        copy.archivedAt = now
+        context.insert(copy)
+        copy.profile = note.profile ?? defaultProfile()
+        return copy
     }
 
     /// Expires the note at an exact moment; `nil` means "until done".

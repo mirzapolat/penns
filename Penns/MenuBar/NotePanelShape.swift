@@ -54,6 +54,5 @@ struct NotePanelRoot<Content: View>: View {
                 .frame(width: proxy.size.width, height: proxy.size.height)
                 .glassEffect(.regular, in: NotePanelShape(arrowX: geometry.arrowX ?? proxy.size.width / 2))
         }
-        .ignoresSafeArea()
     }
 }

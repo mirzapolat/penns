@@ -39,6 +39,11 @@ final class NoteWindowController: NSObject, NSWindowDelegate {
         for button in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
             panel.standardWindowButton(button)?.isHidden = true
         }
+        // The (invisible) titlebar strip would swallow clicks along the top edge,
+        // e.g. on the archive's back button or the note's first line. Hide the
+        // whole titlebar container; edge resizing is handled by the frame and
+        // keeps working.
+        panel.standardWindowButton(.closeButton)?.superview?.superview?.isHidden = true
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = true
@@ -55,6 +60,9 @@ final class NoteWindowController: NSObject, NSWindowDelegate {
 
         let hosting = FirstClickHostingView(rootView: NotePanelRoot(geometry: geometry, content: rootView))
         hosting.sizingOptions = []
+        // No titlebar safe area: the content lays out from the panel's real top
+        // (below the arrow), so the 16 pt margin is the same on every side.
+        hosting.safeAreaRegions = []
         panel.contentView = hosting
     }
 

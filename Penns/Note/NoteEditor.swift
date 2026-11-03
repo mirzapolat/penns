@@ -6,6 +6,7 @@ import SwiftUI
 /// circles you can click.
 struct NoteEditor: NSViewRepresentable {
     @Binding var text: String
+    var style: NoteStyle
     var focusToken: Int
     /// Space kept free under the text for the floating toolbar.
     var bottomInset: CGFloat
@@ -66,6 +67,8 @@ struct NoteEditor: NSViewRepresentable {
         if textView.string != text {
             textView.string = text
             coordinator.applyStyle()
+        } else if coordinator.appliedStyle != style {
+            coordinator.applyStyle()
         }
 
         if coordinator.lastFocusToken != focusToken {
@@ -85,6 +88,7 @@ struct NoteEditor: NSViewRepresentable {
         var parent: NoteEditor
         weak var textView: PennsTextView?
         var lastFocusToken = 0
+        var appliedStyle: NoteStyle?
 
         init(_ parent: NoteEditor) {
             self.parent = parent
@@ -97,27 +101,12 @@ struct NoteEditor: NSViewRepresentable {
             parent.onTyping()
         }
 
-        /// The hidden "# " range of the heading line containing `location`, if any.
-        static func headingMarker(in string: NSString, at location: Int) -> NSRange? {
-            guard location <= string.length else { return nil }
-            let lineRange = string.lineRange(for: NSRange(location: min(location, max(0, string.length)), length: 0))
-            let line = string.substring(with: lineRange).trimmingCharacters(in: .newlines)
-            guard let heading = Markdown.heading(of: line) else { return nil }
-            return NSRange(location: lineRange.location, length: heading.markerLength)
-        }
+        // Typing rules live in PennsKit (EditorRules) so they're unit-tested and
+        // shared with the iOS editor. The delegate only applies their results.
 
-        /// The hidden checklist marker ("- [ ] ", after any indentation) on the line containing `location`.
-        static func checklistMarker(in string: NSString, at location: Int) -> NSRange? {
-            guard location <= string.length else { return nil }
-            let lineRange = string.lineRange(for: NSRange(location: location, length: 0))
-            let line = string.substring(with: lineRange)
-            guard let marker = Checklist.marker(of: line) else { return nil }
-            return NSRange(location: lineRange.location + marker.length - 6, length: 6)
-        }
-
-        /// Any hidden marker (heading or checklist) on the line containing `location`.
-        static func hiddenMarker(in string: NSString, at location: Int) -> NSRange? {
-            headingMarker(in: string, at: location) ?? checklistMarker(in: string, at: location)
+        private func apply(_ edit: EditorRules.Edit, in textView: NSTextView) {
+            textView.insertText(edit.replacement, replacementRange: edit.range)
+            textView.setSelectedRange(edit.selection)
         }
 
         /// Keeps the caret out of hidden heading and checklist marks.
@@ -126,103 +115,31 @@ struct NoteEditor: NSViewRepresentable {
             willChangeSelectionFromCharacterRange oldRange: NSRange,
             toCharacterRange newRange: NSRange
         ) -> NSRange {
-            guard newRange.length == 0 else { return newRange }
-            let string = textView.string as NSString
-            guard let marker = Self.hiddenMarker(in: string, at: newRange.location),
-                  newRange.location >= marker.location,
-                  newRange.location < NSMaxRange(marker) else { return newRange }
-            let movingLeft = newRange.location < oldRange.location && oldRange.location >= NSMaxRange(marker)
-            if movingLeft, marker.location > 0 {
-                return NSRange(location: marker.location - 1, length: 0) // end of the line above
-            }
-            return NSRange(location: NSMaxRange(marker), length: 0)
+            EditorRules.constrainCaret(from: oldRange, to: newRange, in: textView.string)
         }
 
         /// Tab indents and Shift-Tab outdents the current or selected lines.
         func textView(_ textView: NSTextView, doCommandBy selector: Selector) -> Bool {
+            let indent: Bool
             switch selector {
-            case #selector(NSResponder.insertTab(_:)):
-                shiftLines(in: textView, indent: true)
-                return true
-            case #selector(NSResponder.insertBacktab(_:)):
-                shiftLines(in: textView, indent: false)
-                return true
-            default:
-                return false
+            case #selector(NSResponder.insertTab(_:)): indent = true
+            case #selector(NSResponder.insertBacktab(_:)): indent = false
+            default: return false
             }
-        }
-
-        private func shiftLines(in textView: NSTextView, indent: Bool) {
-            let string = textView.string as NSString
-            let selection = textView.selectedRange()
-            let paragraphs = string.lineRange(for: selection)
-            let original = string.substring(with: paragraphs)
-            let updated = indent ? Markdown.indent(original) : Markdown.outdent(original)
-            guard updated != original,
-                  textView.shouldChangeText(in: paragraphs, replacementString: updated) else { return }
-            textView.textStorage?.replaceCharacters(in: paragraphs, with: updated)
-            textView.didChangeText()
-
-            if selection.length == 0 {
-                // Keep the caret on the same character of the first line.
-                let oldFirst = (original as NSString).lineRange(for: NSRange(location: 0, length: 0)).length
-                let newFirst = (updated as NSString).lineRange(for: NSRange(location: 0, length: 0)).length
-                let location = max(paragraphs.location, selection.location + newFirst - oldFirst)
-                textView.setSelectedRange(NSRange(location: location, length: 0))
-            } else {
-                textView.setSelectedRange(NSRange(location: paragraphs.location, length: (updated as NSString).length))
-            }
-        }
-
-        /// "- " + space starts a checklist item; Return continues it (and any
-        /// indentation); Return on an empty item or empty indented line ends it.
-        func textView(_ textView: NSTextView, shouldChangeTextIn range: NSRange, replacementString: String?) -> Bool {
-            // Backspace at the start of a heading's or checklist item's text removes
-            // the whole hidden marker in one go (indentation stays).
-            if replacementString == "", range.length == 1,
-               let marker = Self.hiddenMarker(in: textView.string as NSString, at: range.location),
-               NSMaxRange(range) == NSMaxRange(marker) {
-                textView.insertText("", replacementRange: marker)
-                return false
-            }
-            guard let replacement = replacementString, range.length == 0 else { return true }
-            let string = textView.string as NSString
-            let lineRange = string.lineRange(for: NSRange(location: range.location, length: 0))
-            let prefix = string.substring(with: NSRange(location: lineRange.location, length: range.location - lineRange.location))
-
-            if replacement == " ", prefix.hasSuffix("-"), prefix.dropLast().allSatisfy({ $0 == "\t" || $0 == " " }) {
-                textView.insertText(Checklist.uncheckedMarker, replacementRange: NSRange(location: range.location - 1, length: 1))
-                return false
-            }
-
-            if replacement == "\n" {
-                let line = string.substring(with: lineRange).trimmingCharacters(in: .newlines)
-                let indentation = Markdown.indentation(of: line)
-                let lineLength = (line as NSString).length
-
-                if let marker = Checklist.marker(of: line) {
-                    let content = line.dropFirst(marker.length).trimmingCharacters(in: .whitespaces)
-                    if content.isEmpty {
-                        // Return on an empty item ends the list: the checkbox goes away.
-                        textView.insertText("", replacementRange: NSRange(location: lineRange.location, length: lineLength))
-                        return false
-                    }
-                    if prefix.count >= marker.length {
-                        textView.insertText("\n" + indentation + Checklist.uncheckedMarker, replacementRange: range)
-                        return false
-                    }
-                }
-
-                if !indentation.isEmpty, prefix.count >= indentation.count {
-                    if line.trimmingCharacters(in: .whitespaces).isEmpty {
-                        textView.insertText("", replacementRange: NSRange(location: lineRange.location, length: lineLength))
-                    } else {
-                        textView.insertText("\n" + indentation, replacementRange: range)
-                    }
-                    return false
-                }
+            if let edit = EditorRules.shiftLines(textView.selectedRange(), in: textView.string, indent: indent) {
+                apply(edit, in: textView)
             }
             return true
+        }
+
+        /// Checklist, indentation and hidden-marker rules for typing, Return and Backspace.
+        func textView(_ textView: NSTextView, shouldChangeTextIn range: NSRange, replacementString: String?) -> Bool {
+            guard let replacement = replacementString,
+                  let edit = EditorRules.edit(replacing: range, with: replacement, in: textView.string) else {
+                return true
+            }
+            apply(edit, in: textView)
+            return false
         }
 
         private static func paragraph(before: CGFloat = 0, after: CGFloat = 3) -> NSParagraphStyle {
@@ -236,16 +153,13 @@ struct NoteEditor: NSViewRepresentable {
         }
 
         private var attributes: [NSAttributedString.Key: Any] {
-            [.font: NoteTypography.nsFont, .foregroundColor: NSColor.labelColor, .paragraphStyle: Self.paragraph()]
+            [.font: parent.style.nsFont(), .foregroundColor: NSColor.labelColor, .paragraphStyle: Self.paragraph()]
         }
 
-        /// "# " 22 pt bold, "## " 18 pt bold, "### " 15 pt semibold.
-        private static func headingFont(_ level: Int) -> NSFont {
-            switch level {
-            case 1: NSFont.systemFont(ofSize: 22, weight: .bold)
-            case 2: NSFont.systemFont(ofSize: 18, weight: .bold)
-            default: NSFont.systemFont(ofSize: 15, weight: .semibold)
-            }
+        /// Headings in the chosen font, scaled from the body size
+        /// (22 / 18 / 15 pt at a 14 pt body).
+        private func headingFont(_ level: Int) -> NSFont {
+            parent.style.nsFont(scale: NoteStyle.headingScale(level), weight: level == 3 ? .semibold : .bold)
         }
 
         private func styleHeadings(in storage: NSTextStorage, string: NSString) {
@@ -255,7 +169,7 @@ struct NoteEditor: NSViewRepresentable {
                 let line = string.substring(with: lineRange).trimmingCharacters(in: .newlines)
                 if let heading = Markdown.heading(of: line) {
                     storage.addAttributes([
-                        .font: Self.headingFont(heading.level),
+                        .font: headingFont(heading.level),
                         .paragraphStyle: Self.paragraph(before: heading.level == 1 ? 6 : 4, after: 4),
                     ], range: lineRange)
                     // Hide the "# " marks: invisible and (almost) zero width.
@@ -270,23 +184,24 @@ struct NoteEditor: NSViewRepresentable {
 
         /// Negative kerning for the 6 hidden marker characters, so the text starts
         /// 7 pt after the drawn circle instead of after "- [ ] ".
-        static let markerKern: CGFloat = {
-            let font = NoteTypography.nsFont
+        private var markerKern: CGFloat {
+            let font = parent.style.nsFont()
             let natural = (Checklist.uncheckedMarker as NSString).size(withAttributes: [.font: font]).width
             let wanted = round(font.pointSize * 1.15) + 7
             return (wanted - natural) / CGFloat(Checklist.uncheckedMarker.count)
-        }()
+        }
 
         func applyStyle() {
             guard let textView, let storage = textView.textStorage else { return }
             // Never restyle mid-composition (e.g. Japanese input, dead keys).
             guard !textView.hasMarkedText() else { return }
+            appliedStyle = parent.style
 
             let full = NSRange(location: 0, length: storage.length)
             storage.beginEditing()
             storage.setAttributes(attributes, range: full)
             styleHeadings(in: storage, string: textView.string as NSString)
-            let markerKern = Self.markerKern
+            let markerKern = markerKern
             for line in Checklist.markerRanges(in: textView.string) {
                 storage.addAttribute(.foregroundColor, value: NSColor.clear, range: line.marker)
                 storage.addAttribute(.kern, value: markerKern, range: line.marker)

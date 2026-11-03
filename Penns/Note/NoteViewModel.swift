@@ -61,8 +61,16 @@ final class NoteViewModel {
         get { note.text }
         set {
             guard newValue != note.text else { return }
-            store.setText(newValue, of: note)
-            scheduleSave()
+            if store.setText(newValue, of: note) != nil {
+                // A whole note was wiped in one edit: a copy went to the archive.
+                persist()
+                refreshArchive()
+                showToast("Cleared note kept in Archive", actionTitle: "Show") { [weak self] in
+                    self?.showingArchive = true
+                }
+            } else {
+                scheduleSave()
+            }
             onNoteChange?()
         }
     }
@@ -131,6 +139,11 @@ final class NoteViewModel {
         persist(notify: false)
         refreshArchive()
         onNoteChange?()
+    }
+
+    /// Writes any pending edit to disk now (panel closing, app quitting).
+    func flush() {
+        flushPendingSave()
     }
 
     // MARK: Actions

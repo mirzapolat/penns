@@ -1,12 +1,15 @@
 import KeyboardShortcuts
+import PennsKit
 import ServiceManagement
 import SwiftUI
+import WidgetKit
 
 /// One sheet: general, profiles, widget.
 struct SettingsView: View {
     @AppStorage(Prefs.titleMode) private var titleMode: MenuBarTitleMode = .icon
     @AppStorage(Prefs.showInDock) private var showInDock = false
     @AppStorage(Prefs.menuBarIcon) private var menuBarIcon = MenuBarIcon.all[0]
+    @AppStorage(Prefs.menuBarIconSize) private var menuBarIconSize = MenuBarIcon.defaultSize
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var showWidgetGuide = false
 
@@ -19,12 +22,21 @@ struct SettingsView: View {
                         Text(mode.title).tag(mode)
                     }
                 }
-                if titleMode != .textOnly {
-                    LabeledContent("Icon") {
-                        IconPicker(selection: $menuBarIcon)
+                LabeledContent(titleMode == .textOnly ? "Icon (while note is empty)" : "Icon") {
+                    IconPicker(selection: $menuBarIcon)
+                }
+                LabeledContent("Icon size") {
+                    HStack(spacing: 10) {
+                        Slider(value: $menuBarIconSize, in: MenuBarIcon.sizeRange, step: 1)
+                            .frame(width: 160)
+                        Text("\(Int(menuBarIconSize)) pt")
+                            .monospacedDigit()
+                            .foregroundStyle(.secondary)
+                            .frame(width: 40, alignment: .trailing)
                     }
                 }
             }
+            TextStyleSection()
             Section {
                 Toggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, enabled in
@@ -116,5 +128,49 @@ private struct IconPicker: View {
             }
         }
         .fixedSize()
+    }
+}
+
+/// Font and size of the note. Applies live to the editor, widget, peek and archive.
+private struct TextStyleSection: View {
+    @AppStorage(NoteStyle.fontKey, store: ProfileSelection.defaults) private var fontValue = "system"
+    @AppStorage(NoteStyle.sizeKey, store: ProfileSelection.defaults) private var fontSize = NoteStyle.defaultSize
+
+    private static let families = NSFontManager.shared.availableFontFamilies.sorted()
+
+    var body: some View {
+        let style = NoteStyle(fontValue: fontValue, size: fontSize)
+        Section("Text") {
+            Picker("Font", selection: $fontValue) {
+                ForEach(NoteFont.builtIn, id: \.self) { font in
+                    Text(font.displayName)
+                        .font(NoteStyle(font: font, size: 13).swiftUIFont())
+                        .tag(font.storageValue)
+                }
+                Divider()
+                ForEach(Self.families, id: \.self) { family in
+                    Text(family)
+                        .font(.custom(family, size: 13))
+                        .tag(NoteFont.family(family).storageValue)
+                }
+            }
+            LabeledContent("Size") {
+                HStack(spacing: 10) {
+                    Slider(value: $fontSize, in: NoteStyle.sizeRange, step: 1)
+                        .frame(width: 160)
+                    Text("\(Int(fontSize)) pt")
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                        .frame(width: 40, alignment: .trailing)
+                }
+            }
+            Text("One note, always one glance away.")
+                .font(style.swiftUIFont())
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 4)
+                .accessibilityLabel("Preview")
+        }
+        .onChange(of: fontValue) { WidgetCenter.shared.reloadAllTimelines() }
+        .onChange(of: fontSize) { WidgetCenter.shared.reloadAllTimelines() }
     }
 }

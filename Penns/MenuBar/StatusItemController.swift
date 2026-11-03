@@ -86,7 +86,8 @@ final class StatusItemController: NSResponder {
     func refreshTitle() {
         guard let button = statusItem.button else { return }
         let title = model.menuBarTitle
-        let icon = NSImage(systemSymbolName: MenuBarIcon.current, accessibilityDescription: "Penns")
+        let icon = NSImage(systemSymbolName: MenuBarIcon.current, accessibilityDescription: "Penns")?
+            .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: MenuBarIcon.currentSize, weight: .regular))
         icon?.isTemplate = true
         switch MenuBarTitleMode.current {
         case .icon:
@@ -127,6 +128,7 @@ final class StatusItemController: NSResponder {
         )
         noteWindow = NoteWindowController(rootView: root)
         noteWindow.onClose = { [weak self] in
+            self?.model.flush()
             self?.model.showingArchive = false
         }
     }

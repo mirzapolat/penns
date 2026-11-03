@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-/// A context with its own active note. Free users have exactly one.
+/// A context with its own active note, e.g. Work or Home.
 @Model
 public final class Profile {
     public var id: UUID = UUID()

@@ -42,3 +42,18 @@ import Testing
         #expect(note.firstLine == "Groceries")
     }
 }
+
+@Suite struct NoteStyleTests {
+    @Test func fontStorageRoundTrips() {
+        for font in NoteFont.builtIn + [.family("Avenir Next")] {
+            #expect(NoteFont(storageValue: font.storageValue) == font)
+        }
+        #expect(NoteFont(storageValue: "garbage") == .system)
+    }
+
+    @Test func sizeIsClamped() {
+        #expect(NoteStyle(size: 4).size == 11)
+        #expect(NoteStyle(size: 99).size == 24)
+        #expect(NoteStyle(fontValue: "serif", size: 16) == NoteStyle(font: .serif, size: 16))
+    }
+}

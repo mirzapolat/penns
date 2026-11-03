@@ -92,6 +92,11 @@ private struct ProfileHeaderRow: View {
     let isExpanded: Bool
     var toggle: () -> Void
 
+    static func timeText(minutes: Int) -> String {
+        let date = Calendar.current.date(byAdding: .minute, value: minutes, to: Calendar.current.startOfDay(for: .now)) ?? .now
+        return date.formatted(date: .omitted, time: .shortened)
+    }
+
     var body: some View {
         Button(action: toggle) {
             HStack(spacing: 10) {
@@ -101,7 +106,8 @@ private struct ProfileHeaderRow: View {
                 Text(profile.name.isEmpty ? "Untitled" : profile.name)
                     .foregroundStyle(.primary)
                 if profile.morningResetEnabled {
-                    Image(systemName: "sunrise")
+                    Label(Self.timeText(minutes: profile.morningResetMinutes), systemImage: "sunrise")
+                        .labelStyle(.titleAndIcon)
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .help("Fresh start every morning")
@@ -158,16 +164,39 @@ private struct ProfileDetailRows: View {
             }
         }
 
-        Toggle("Fresh start every morning", isOn: Binding(
-            get: { profile.morningResetEnabled },
-            set: { model.setMorningReset(enabled: $0, minutes: profile.morningResetMinutes, for: profile) }
-        ))
-
-        if profile.morningResetEnabled {
-            DatePicker("Archive yesterday's note at", selection: Binding(
-                get: { Self.date(minutes: profile.morningResetMinutes) },
-                set: { model.setMorningReset(enabled: true, minutes: Self.minutes(of: $0), for: profile) }
-            ), displayedComponents: .hourAndMinute)
+        // The time sits right next to the switch and appears as soon as it's on.
+        LabeledContent {
+            HStack(spacing: 10) {
+                if profile.morningResetEnabled {
+                    DatePicker("Time", selection: Binding(
+                        get: { Self.date(minutes: profile.morningResetMinutes) },
+                        set: { model.setMorningReset(enabled: true, minutes: Self.minutes(of: $0), for: profile) }
+                    ), displayedComponents: .hourAndMinute)
+                    .labelsHidden()
+                    .datePickerStyle(.field)
+                    .fixedSize()
+                    .transition(.opacity)
+                }
+                Toggle("Fresh start every morning", isOn: Binding(
+                    get: { profile.morningResetEnabled },
+                    set: { enabled in
+                        withAnimation(.snappy(duration: 0.2)) {
+                            model.setMorningReset(enabled: enabled, minutes: profile.morningResetMinutes, for: profile)
+                        }
+                    }
+                ))
+                .labelsHidden()
+                .toggleStyle(.switch)
+            }
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Fresh start every morning")
+                Text(profile.morningResetEnabled
+                     ? "Yesterday's note is archived at this time."
+                     : "Archive yesterday's note each morning.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
 
         if model.profiles.count > 1 {

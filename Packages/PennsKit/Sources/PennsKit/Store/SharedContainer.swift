@@ -24,7 +24,9 @@ public enum SharedContainer {
         if inMemory {
             configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         } else {
-            configuration = ModelConfiguration(schema: schema, url: storeURL(), cloudKitDatabase: cloudKitDatabase)
+            let url = storeURL()
+            migrateLegacyStoreIfNeeded(to: url)
+            configuration = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: cloudKitDatabase)
         }
         do {
             return try ModelContainer(for: schema, configurations: configuration)
@@ -49,6 +51,45 @@ public enum SharedContainer {
 
     static var cloudKitDatabase: ModelConfiguration.CloudKitDatabase {
         cloudKitContainerID.map { .private($0) } ?? .none
+    }
+
+    /// Earlier builds may have stored the note elsewhere: in the app's own
+    /// container when no App Group was available, or in a differently named App
+    /// Group (the group id changes once a development team is set). If the
+    /// current store doesn't exist yet, copy the newest earlier one over so the
+    /// note never "disappears". The originals are left in place.
+    static func migrateLegacyStoreIfNeeded(to target: URL) {
+        let fileManager = FileManager.default
+        guard Bundle.main.bundleURL.pathExtension != "appex",
+              !fileManager.fileExists(atPath: target.path) else { return }
+
+        let support = URL.applicationSupportDirectory
+        let candidates = [
+            support.appending(path: "Penns.store"),
+            support.appending(path: "Penns/Penns.store"),
+        ].filter { $0.standardizedFileURL != target.standardizedFileURL && fileManager.fileExists(atPath: $0.path) }
+
+        let newest = candidates.max { lhs, rhs in
+            let l = (try? lhs.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+            let r = (try? rhs.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+            return l < r
+        }
+        guard let source = newest else { return }
+
+        do {
+            try fileManager.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
+            // SQLite keeps recent writes in the -wal file; copy all three together.
+            for suffix in ["", "-wal", "-shm"] {
+                let from = URL(fileURLWithPath: source.path + suffix)
+                let to = URL(fileURLWithPath: target.path + suffix)
+                if fileManager.fileExists(atPath: from.path) {
+                    try fileManager.copyItem(at: from, to: to)
+                }
+            }
+            logger.notice("Migrated note store from \(source.path, privacy: .public)")
+        } catch {
+            logger.error("Store migration failed: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     /// `<App Group>/Library/Application Support/Penns.store`, or the app's own

@@ -10,6 +10,10 @@ struct NoteScreen: View {
     var close: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @AppStorage(NoteStyle.fontKey, store: ProfileSelection.defaults) private var fontValue = "system"
+    @AppStorage(NoteStyle.sizeKey, store: ProfileSelection.defaults) private var fontSize = NoteStyle.defaultSize
+
+    private var style: NoteStyle { NoteStyle(fontValue: fontValue, size: fontSize) }
 
     /// One margin for everything: text, pills and headers sit this far from every edge.
     static let margin: CGFloat = 16
@@ -33,7 +37,6 @@ struct NoteScreen: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .ignoresSafeArea()
         .animation(.spring(duration: 0.3, bounce: 0.2), value: model.toast?.id)
         .animation(.spring(duration: 0.35, bounce: 0.15), value: model.showingArchive)
     }
@@ -50,6 +53,7 @@ struct NoteScreen: View {
                 ZStack(alignment: .topLeading) {
                     NoteEditor(
                         text: $model.text,
+                        style: style,
                         focusToken: model.focusToken,
                         bottomInset: Self.toolbarClearance,
                         onEscape: close,
@@ -57,7 +61,7 @@ struct NoteScreen: View {
                     )
                     if model.note.text.isEmpty {
                         Text(model.placeholder)
-                            .font(NoteTypography.font)
+                            .font(style.swiftUIFont())
                             .foregroundStyle(.tertiary)
                             .padding(.top, 4)
                             .allowsHitTesting(false)

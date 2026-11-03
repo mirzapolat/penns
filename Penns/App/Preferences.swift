@@ -5,6 +5,7 @@ enum Prefs {
     static let titleMode = "menuBarTitleMode"
     static let showInDock = "showInDock"
     static let menuBarIcon = "menuBarIcon"
+    static let menuBarIconSize = "menuBarIconSize"
     static let didShowWelcome = "didShowWelcome"
 }
 
@@ -21,6 +22,14 @@ enum MenuBarIcon {
     static var current: String {
         let name = UserDefaults.standard.string(forKey: Prefs.menuBarIcon) ?? ""
         return all.contains(name) ? name : all[0]
+    }
+
+    static let sizeRange: ClosedRange<Double> = 11...20
+    static let defaultSize: Double = 16
+
+    static var currentSize: CGFloat {
+        let size = UserDefaults.standard.object(forKey: Prefs.menuBarIconSize) as? Double ?? defaultSize
+        return CGFloat(min(max(size, sizeRange.lowerBound), sizeRange.upperBound))
     }
 }
 
