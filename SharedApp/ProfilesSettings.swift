@@ -1,50 +1,63 @@
 import Observation
+import os
 import PennsKit
 import SwiftData
 import SwiftUI
 import WidgetKit
 
-/// Edits profiles directly in the shared store; the note panel reloads on change.
+/// Edits profiles in the shared store; the note panel reloads on change.
+/// Every write fetches the profile fresh by id (`NoteStore.updateProfile`), so
+/// Settings never saves an old copy over newer values from the panel, the
+/// widget or an intent (e.g. `clearedCount`).
 @MainActor
 @Observable
 final class ProfilesModel {
     private(set) var profiles: [Profile] = []
-    @ObservationIgnored private var store = NoteStore(context: ModelContext(SharedContainer.shared))
+    @ObservationIgnored private let container = SharedContainer.shared
+    @ObservationIgnored private let logger = Logger(subsystem: "com.mirzapolat.penns", category: "settings")
 
     func reload() {
-        store = NoteStore(context: ModelContext(SharedContainer.shared))
-        profiles = store.profiles()
+        profiles = NoteStore(context: ModelContext(container)).profiles()
     }
 
     func add() {
-        let profile = store.createProfile(name: "Profile \(profiles.count + 1)")
+        let store = NoteStore(context: ModelContext(container))
+        let profile = store.createProfile(name: "Profile \(store.profiles().count + 1)")
         _ = store.activeNote(in: profile)
-        commit()
+        save { try store.save() }
     }
 
     func rename(_ profile: Profile, to name: String) {
-        profile.name = name
-        commit()
+        update(profile) { profile, _ in profile.name = name }
     }
 
     func setColor(_ hex: String, for profile: Profile) {
-        profile.colorHex = hex
-        commit()
+        update(profile) { profile, _ in profile.colorHex = hex }
     }
 
     func setMorningReset(enabled: Bool, minutes: Int, for profile: Profile) {
-        store.setMorningReset(enabled: enabled, minutes: minutes, for: profile)
-        commit()
+        update(profile) { profile, store in
+            store.setMorningReset(enabled: enabled, minutes: minutes, for: profile)
+        }
     }
 
     func delete(_ profile: Profile) {
-        store.deleteProfile(profile)
-        commit()
+        update(profile) { profile, store in store.deleteProfile(profile) }
     }
 
-    private func commit() {
-        try? store.save()
-        profiles = store.profiles()
+    private func update(_ profile: Profile, _ change: (Profile, NoteStore) -> Void) {
+        let id = profile.id
+        let container = container
+        save { try NoteStore.updateProfile(id: id, in: container, change) }
+    }
+
+    private func save(_ write: () throws -> Void) {
+        do {
+            try write()
+        } catch {
+            logger.error("Saving profiles failed: \(error.localizedDescription, privacy: .public)")
+        }
+        reload()
         ChangeSignal.post(sender: self)
         WidgetCenter.shared.reloadAllTimelines()
     }
@@ -173,7 +186,11 @@ private struct ProfileDetailRows: View {
                         set: { model.setMorningReset(enabled: true, minutes: Self.minutes(of: $0), for: profile) }
                     ), displayedComponents: .hourAndMinute)
                     .labelsHidden()
+                    #if os(macOS)
                     .datePickerStyle(.field)
+                    #else
+                    .datePickerStyle(.compact)
+                    #endif
                     .fixedSize()
                     .transition(.opacity)
                 }

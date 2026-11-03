@@ -1,0 +1,11 @@
+// Signing for every Penns target.
+//
+// Your Apple Developer Team ID lives in Local.xcconfig next to this file.
+// It isn't committed (see .gitignore). Create it with one line:
+//
+//     DEVELOPMENT_TEAM = <your Team ID>
+//
+// Don't pick the team in Xcode's Signing tab: Xcode writes it into the
+// project file, which is committed.
+
+#include? "Local.xcconfig"

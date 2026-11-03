@@ -11,6 +11,15 @@
 		AA0000000000000000000051 /* PennsKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000060 /* PennsKit */; };
 		AA0000000000000000000052 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000061 /* KeyboardShortcuts */; };
 		AA0000000000000000000053 /* PennsKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000062 /* PennsKit */; };
+		BB0000000000000000000050 /* PennsiOSWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BB0000000000000000000021 /* PennsiOSWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BB0000000000000000000051 /* PennsKit in Frameworks */ = {isa = PBXBuildFile; productRef = BB0000000000000000000060 /* PennsKit */; };
+		BB0000000000000000000053 /* PennsKit in Frameworks */ = {isa = PBXBuildFile; productRef = BB0000000000000000000062 /* PennsKit */; };
+		CC0000000000000000000050 /* PennsShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CC0000000000000000000021 /* PennsShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		CC0000000000000000000053 /* PennsKit in Frameworks */ = {isa = PBXBuildFile; productRef = CC0000000000000000000062 /* PennsKit */; };
+		DD0000000000000000000050 /* PennsWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = DD0000000000000000000020 /* PennsWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DD0000000000000000000051 /* PennsKit in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000060 /* PennsKit */; };
+		DD0000000000000000000052 /* PennsWatchWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DD0000000000000000000021 /* PennsWatchWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DD0000000000000000000053 /* PennsKit in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000062 /* PennsKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -20,6 +29,34 @@
 			proxyType = 1;
 			remoteGlobalIDString = AA0000000000000000000031;
 			remoteInfo = PennsWidgetExtension;
+		};
+		BB0000000000000000000081 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BB0000000000000000000031;
+			remoteInfo = PennsiOSWidgetExtension;
+		};
+		CC0000000000000000000081 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CC0000000000000000000031;
+			remoteInfo = PennsShare;
+		};
+		DD0000000000000000000081 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DD0000000000000000000030;
+			remoteInfo = PennsWatch;
+		};
+		DD0000000000000000000083 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DD0000000000000000000031;
+			remoteInfo = PennsWatchWidget;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -35,6 +72,40 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BB0000000000000000000043 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				BB0000000000000000000050 /* PennsiOSWidgetExtension.appex in Embed Foundation Extensions */,
+				CC0000000000000000000050 /* PennsShare.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD0000000000000000000043 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				DD0000000000000000000052 /* PennsWatchWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD0000000000000000000047 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				DD0000000000000000000050 /* PennsWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -45,7 +116,23 @@
 		AA0000000000000000000024 /* Penns.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Penns.entitlements; sourceTree = "<group>"; };
 		AA0000000000000000000025 /* PennsWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PennsWidget.entitlements; sourceTree = "<group>"; };
 		AA0000000000000000000026 /* PennsKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = PennsKit; path = Packages/PennsKit; sourceTree = "<group>"; };
-		AA0000000000000000000027 /* PLAN.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PLAN.md; sourceTree = "<group>"; };
+		AA0000000000000000000027 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
+		BB0000000000000000000020 /* Penns.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Penns.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB0000000000000000000021 /* PennsiOSWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PennsiOSWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB0000000000000000000022 /* PennsiOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PennsiOS-Info.plist"; sourceTree = "<group>"; };
+		BB0000000000000000000023 /* PennsiOSWidget-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PennsiOSWidget-Info.plist"; sourceTree = "<group>"; };
+		BB0000000000000000000024 /* PennsiOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PennsiOS.entitlements; sourceTree = "<group>"; };
+		BB0000000000000000000025 /* PennsiOSWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PennsiOSWidget.entitlements; sourceTree = "<group>"; };
+		CC0000000000000000000021 /* PennsShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PennsShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC0000000000000000000023 /* PennsShare-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PennsShare-Info.plist"; sourceTree = "<group>"; };
+		CC0000000000000000000025 /* PennsShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PennsShare.entitlements; sourceTree = "<group>"; };
+		DD0000000000000000000020 /* PennsWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PennsWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DD0000000000000000000021 /* PennsWatchWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PennsWatchWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		DD0000000000000000000022 /* PennsWatch-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PennsWatch-Info.plist"; sourceTree = "<group>"; };
+		DD0000000000000000000023 /* PennsWatchWidget-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PennsWatchWidget-Info.plist"; sourceTree = "<group>"; };
+		DD0000000000000000000024 /* PennsWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PennsWatch.entitlements; sourceTree = "<group>"; };
+		DD0000000000000000000025 /* PennsWatchWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PennsWatchWidget.entitlements; sourceTree = "<group>"; };
+		EE0000000000000000000001 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -62,6 +149,31 @@
 		AA0000000000000000000012 /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000013 /* SharedApp */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SharedApp;
+			sourceTree = "<group>";
+		};
+		BB0000000000000000000010 /* PennsiOS */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PennsiOS;
+			sourceTree = "<group>";
+		};
+		CC0000000000000000000010 /* PennsShare */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PennsShare;
+			sourceTree = "<group>";
+		};
+		DD0000000000000000000010 /* PennsWatch */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PennsWatch;
+			sourceTree = "<group>";
+		};
+		DD0000000000000000000011 /* PennsWatchWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PennsWatchWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -84,15 +196,60 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BB0000000000000000000041 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB0000000000000000000051 /* PennsKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB0000000000000000000045 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB0000000000000000000053 /* PennsKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CC0000000000000000000045 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC0000000000000000000053 /* PennsKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD0000000000000000000041 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DD0000000000000000000051 /* PennsKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD0000000000000000000045 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DD0000000000000000000053 /* PennsKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		AA0000000000000000000002 = {
 			isa = PBXGroup;
 			children = (
-				AA0000000000000000000027 /* PLAN.md */,
+				AA0000000000000000000027 /* CLAUDE.md */,
 				AA0000000000000000000010 /* Penns */,
 				AA0000000000000000000011 /* PennsWidget */,
+				AA0000000000000000000013 /* SharedApp */,
+				DD0000000000000000000010 /* PennsWatch */,
+				DD0000000000000000000011 /* PennsWatchWidget */,
+				CC0000000000000000000010 /* PennsShare */,
+				BB0000000000000000000010 /* PennsiOS */,
 				AA0000000000000000000012 /* Shared */,
 				AA0000000000000000000026 /* PennsKit */,
 				AA0000000000000000000004 /* Config */,
@@ -105,6 +262,11 @@
 			children = (
 				AA0000000000000000000020 /* Penns.app */,
 				AA0000000000000000000021 /* PennsWidgetExtension.appex */,
+				BB0000000000000000000020 /* Penns.app */,
+				BB0000000000000000000021 /* PennsiOSWidgetExtension.appex */,
+				CC0000000000000000000021 /* PennsShare.appex */,
+				DD0000000000000000000020 /* PennsWatch.app */,
+				DD0000000000000000000021 /* PennsWatchWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -112,10 +274,21 @@
 		AA0000000000000000000004 /* Config */ = {
 			isa = PBXGroup;
 			children = (
+				EE0000000000000000000001 /* Signing.xcconfig */,
 				AA0000000000000000000022 /* Penns-Info.plist */,
 				AA0000000000000000000024 /* Penns.entitlements */,
 				AA0000000000000000000023 /* PennsWidget-Info.plist */,
 				AA0000000000000000000025 /* PennsWidget.entitlements */,
+				BB0000000000000000000022 /* PennsiOS-Info.plist */,
+				BB0000000000000000000024 /* PennsiOS.entitlements */,
+				BB0000000000000000000023 /* PennsiOSWidget-Info.plist */,
+				BB0000000000000000000025 /* PennsiOSWidget.entitlements */,
+				CC0000000000000000000023 /* PennsShare-Info.plist */,
+				CC0000000000000000000025 /* PennsShare.entitlements */,
+				DD0000000000000000000022 /* PennsWatch-Info.plist */,
+				DD0000000000000000000024 /* PennsWatch.entitlements */,
+				DD0000000000000000000023 /* PennsWatchWidget-Info.plist */,
+				DD0000000000000000000025 /* PennsWatchWidget.entitlements */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -140,6 +313,7 @@
 			fileSystemSynchronizedGroups = (
 				AA0000000000000000000010 /* Penns */,
 				AA0000000000000000000012 /* Shared */,
+				AA0000000000000000000013 /* SharedApp */,
 			);
 			name = Penns;
 			packageProductDependencies = (
@@ -174,6 +348,131 @@
 			productReference = AA0000000000000000000021 /* PennsWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		BB0000000000000000000030 /* PennsiOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB0000000000000000000091 /* Build configuration list for PBXNativeTarget "PennsiOS" */;
+			buildPhases = (
+				BB0000000000000000000040 /* Sources */,
+				BB0000000000000000000041 /* Frameworks */,
+				BB0000000000000000000042 /* Resources */,
+				DD0000000000000000000047 /* Embed Watch Content */,
+				BB0000000000000000000043 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BB0000000000000000000080 /* PBXTargetDependency */,
+				CC0000000000000000000080 /* PBXTargetDependency */,
+				DD0000000000000000000080 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AA0000000000000000000012 /* Shared */,
+				AA0000000000000000000013 /* SharedApp */,
+				BB0000000000000000000010 /* PennsiOS */,
+			);
+			name = PennsiOS;
+			packageProductDependencies = (
+				BB0000000000000000000060 /* PennsKit */,
+			);
+			productName = PennsiOS;
+			productReference = BB0000000000000000000020 /* Penns.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BB0000000000000000000031 /* PennsiOSWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB0000000000000000000092 /* Build configuration list for PBXNativeTarget "PennsiOSWidgetExtension" */;
+			buildPhases = (
+				BB0000000000000000000044 /* Sources */,
+				BB0000000000000000000045 /* Frameworks */,
+				BB0000000000000000000046 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AA0000000000000000000011 /* PennsWidget */,
+				AA0000000000000000000012 /* Shared */,
+			);
+			name = PennsiOSWidgetExtension;
+			packageProductDependencies = (
+				BB0000000000000000000062 /* PennsKit */,
+			);
+			productName = PennsiOSWidgetExtension;
+			productReference = BB0000000000000000000021 /* PennsiOSWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		CC0000000000000000000031 /* PennsShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CC0000000000000000000092 /* Build configuration list for PBXNativeTarget "PennsShare" */;
+			buildPhases = (
+				CC0000000000000000000044 /* Sources */,
+				CC0000000000000000000045 /* Frameworks */,
+				CC0000000000000000000046 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				CC0000000000000000000010 /* PennsShare */,
+			);
+			name = PennsShare;
+			packageProductDependencies = (
+				CC0000000000000000000062 /* PennsKit */,
+			);
+			productName = PennsShare;
+			productReference = CC0000000000000000000021 /* PennsShare.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		DD0000000000000000000030 /* PennsWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DD0000000000000000000091 /* Build configuration list for PBXNativeTarget "PennsWatch" */;
+			buildPhases = (
+				DD0000000000000000000040 /* Sources */,
+				DD0000000000000000000041 /* Frameworks */,
+				DD0000000000000000000042 /* Resources */,
+				DD0000000000000000000043 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DD0000000000000000000082 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				DD0000000000000000000010 /* PennsWatch */,
+			);
+			name = PennsWatch;
+			packageProductDependencies = (
+				DD0000000000000000000060 /* PennsKit */,
+			);
+			productName = PennsWatch;
+			productReference = DD0000000000000000000020 /* PennsWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DD0000000000000000000031 /* PennsWatchWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DD0000000000000000000092 /* Build configuration list for PBXNativeTarget "PennsWatchWidget" */;
+			buildPhases = (
+				DD0000000000000000000044 /* Sources */,
+				DD0000000000000000000045 /* Frameworks */,
+				DD0000000000000000000046 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				DD0000000000000000000011 /* PennsWatchWidget */,
+			);
+			name = PennsWatchWidget;
+			packageProductDependencies = (
+				DD0000000000000000000062 /* PennsKit */,
+			);
+			productName = PennsWatchWidget;
+			productReference = DD0000000000000000000021 /* PennsWatchWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -188,6 +487,21 @@
 						CreatedOnToolsVersion = 27.2;
 					};
 					AA0000000000000000000031 = {
+						CreatedOnToolsVersion = 27.2;
+					};
+					BB0000000000000000000030 = {
+						CreatedOnToolsVersion = 27.2;
+					};
+					BB0000000000000000000031 = {
+						CreatedOnToolsVersion = 27.2;
+					};
+					CC0000000000000000000031 = {
+						CreatedOnToolsVersion = 27.2;
+					};
+					DD0000000000000000000030 = {
+						CreatedOnToolsVersion = 27.2;
+					};
+					DD0000000000000000000031 = {
 						CreatedOnToolsVersion = 27.2;
 					};
 				};
@@ -211,7 +525,12 @@
 			projectRoot = "";
 			targets = (
 				AA0000000000000000000030 /* Penns */,
+				BB0000000000000000000030 /* PennsiOS */,
+				BB0000000000000000000031 /* PennsiOSWidgetExtension */,
 				AA0000000000000000000031 /* PennsWidgetExtension */,
+				CC0000000000000000000031 /* PennsShare */,
+				DD0000000000000000000030 /* PennsWatch */,
+				DD0000000000000000000031 /* PennsWatchWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -225,6 +544,41 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		AA0000000000000000000046 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB0000000000000000000042 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB0000000000000000000046 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CC0000000000000000000046 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD0000000000000000000042 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD0000000000000000000046 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -248,6 +602,41 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BB0000000000000000000040 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB0000000000000000000044 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CC0000000000000000000044 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD0000000000000000000040 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD0000000000000000000044 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -256,24 +645,44 @@
 			target = AA0000000000000000000031 /* PennsWidgetExtension */;
 			targetProxy = AA0000000000000000000081 /* PBXContainerItemProxy */;
 		};
+		BB0000000000000000000080 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BB0000000000000000000031 /* PennsiOSWidgetExtension */;
+			targetProxy = BB0000000000000000000081 /* PBXContainerItemProxy */;
+		};
+		CC0000000000000000000080 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CC0000000000000000000031 /* PennsShare */;
+			targetProxy = CC0000000000000000000081 /* PBXContainerItemProxy */;
+		};
+		DD0000000000000000000080 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DD0000000000000000000030 /* PennsWatch */;
+			targetProxy = DD0000000000000000000081 /* PBXContainerItemProxy */;
+		};
+		DD0000000000000000000082 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DD0000000000000000000031 /* PennsWatchWidget */;
+			targetProxy = DD0000000000000000000083 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		AA00000000000000000000A0 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = EE0000000000000000000001 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				APP_GROUP_IDENTIFIER = "$(TeamIdentifierPrefix)com.mirzapolat.penns";
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CLOUDKIT_CONTAINER_IDENTIFIER = "";
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_IDENTITY = "-";
+				CLOUDKIT_CONTAINER_IDENTIFIER = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -282,11 +691,13 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 0.1.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
 			};
@@ -294,26 +705,28 @@
 		};
 		AA00000000000000000000A1 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = EE0000000000000000000001 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				APP_GROUP_IDENTIFIER = "$(TeamIdentifierPrefix)com.mirzapolat.penns";
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CLOUDKIT_CONTAINER_IDENTIFIER = "";
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_IDENTITY = "-";
+				CLOUDKIT_CONTAINER_IDENTIFIER = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 0.1.0;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
@@ -406,6 +819,272 @@
 			};
 			name = Release;
 		};
+		BB00000000000000000000A2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.com.mirzapolat.penns;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/PennsiOS.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/PennsiOS-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Penns;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirzapolat.penns;
+				PRODUCT_NAME = Penns;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BB00000000000000000000A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.com.mirzapolat.penns;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/PennsiOS.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/PennsiOS-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Penns;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirzapolat.penns;
+				PRODUCT_NAME = Penns;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BB00000000000000000000A4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.com.mirzapolat.penns;
+				CODE_SIGN_ENTITLEMENTS = Config/PennsiOSWidget.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/PennsiOSWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Penns;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirzapolat.penns.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BB00000000000000000000A5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.com.mirzapolat.penns;
+				CODE_SIGN_ENTITLEMENTS = Config/PennsiOSWidget.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/PennsiOSWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Penns;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirzapolat.penns.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		CC00000000000000000000A4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.com.mirzapolat.penns;
+				CODE_SIGN_ENTITLEMENTS = Config/PennsShare.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/PennsShare-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Penns;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirzapolat.penns.share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		CC00000000000000000000A5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.com.mirzapolat.penns;
+				CODE_SIGN_ENTITLEMENTS = Config/PennsShare.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/PennsShare-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Penns;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirzapolat.penns.share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		DD00000000000000000000A2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.com.mirzapolat.penns;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/PennsWatch.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/PennsWatch-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Penns;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.mirzapolat.penns;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirzapolat.penns.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		DD00000000000000000000A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.com.mirzapolat.penns;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/PennsWatch.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/PennsWatch-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Penns;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.mirzapolat.penns;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirzapolat.penns.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
+		DD00000000000000000000A4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.com.mirzapolat.penns;
+				CODE_SIGN_ENTITLEMENTS = Config/PennsWatchWidget.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/PennsWatchWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Penns;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirzapolat.penns.watchkitapp.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		DD00000000000000000000A5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.com.mirzapolat.penns;
+				CODE_SIGN_ENTITLEMENTS = Config/PennsWatchWidget.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/PennsWatchWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Penns;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirzapolat.penns.watchkitapp.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -432,6 +1111,51 @@
 			buildConfigurations = (
 				AA00000000000000000000A4 /* Debug */,
 				AA00000000000000000000A5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB0000000000000000000091 /* Build configuration list for PBXNativeTarget "PennsiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB00000000000000000000A2 /* Debug */,
+				BB00000000000000000000A3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB0000000000000000000092 /* Build configuration list for PBXNativeTarget "PennsiOSWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB00000000000000000000A4 /* Debug */,
+				BB00000000000000000000A5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CC0000000000000000000092 /* Build configuration list for PBXNativeTarget "PennsShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CC00000000000000000000A4 /* Debug */,
+				CC00000000000000000000A5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DD0000000000000000000091 /* Build configuration list for PBXNativeTarget "PennsWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DD00000000000000000000A2 /* Debug */,
+				DD00000000000000000000A3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DD0000000000000000000092 /* Build configuration list for PBXNativeTarget "PennsWatchWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DD00000000000000000000A4 /* Debug */,
+				DD00000000000000000000A5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -468,6 +1192,31 @@
 			productName = KeyboardShortcuts;
 		};
 		AA0000000000000000000062 /* PennsKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000070 /* XCLocalSwiftPackageReference "Packages/PennsKit" */;
+			productName = PennsKit;
+		};
+		BB0000000000000000000060 /* PennsKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000070 /* XCLocalSwiftPackageReference "Packages/PennsKit" */;
+			productName = PennsKit;
+		};
+		BB0000000000000000000062 /* PennsKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000070 /* XCLocalSwiftPackageReference "Packages/PennsKit" */;
+			productName = PennsKit;
+		};
+		CC0000000000000000000062 /* PennsKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000070 /* XCLocalSwiftPackageReference "Packages/PennsKit" */;
+			productName = PennsKit;
+		};
+		DD0000000000000000000060 /* PennsKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000070 /* XCLocalSwiftPackageReference "Packages/PennsKit" */;
+			productName = PennsKit;
+		};
+		DD0000000000000000000062 /* PennsKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AA0000000000000000000070 /* XCLocalSwiftPackageReference "Packages/PennsKit" */;
 			productName = PennsKit;

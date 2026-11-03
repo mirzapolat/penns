@@ -132,3 +132,37 @@ public extension NoteTypography {
     static var nsFont: NSFont { NoteStyle.current.nsFont() }
 }
 #endif
+
+#if canImport(UIKit) && !os(watchOS)
+import UIKit
+
+public extension NoteStyle {
+    func uiFont(scale: CGFloat = 1, weight: UIFont.Weight = .regular) -> UIFont {
+        let size = size * scale
+        let base = UIFont.systemFont(ofSize: size, weight: weight)
+        let design: UIFontDescriptor.SystemDesign?
+        switch font {
+        case .system: return base
+        case .rounded: design = .rounded
+        case .serif: design = .serif
+        case .monospaced: design = .monospaced
+        case .family(let name):
+            var descriptor = UIFontDescriptor(fontAttributes: [.family: name])
+            if weight.rawValue >= UIFont.Weight.semibold.rawValue,
+               let bold = descriptor.withSymbolicTraits(.traitBold) {
+                descriptor = bold
+            }
+            let font = UIFont(descriptor: descriptor, size: size)
+            return font.familyName == name ? font : base
+        }
+        if let design, let descriptor = base.fontDescriptor.withDesign(design) {
+            return UIFont(descriptor: descriptor, size: size)
+        }
+        return base
+    }
+}
+
+public extension NoteTypography {
+    static var uiFont: UIFont { NoteStyle.current.uiFont() }
+}
+#endif

@@ -3,10 +3,24 @@ import Foundation
 import PennsKit
 import WidgetKit
 
-/// Opens the note popover. App-only: extensions can't open the menu bar.
+extension Notification.Name {
+    static let pennsShowNote = Notification.Name("PennsShowNote")
+}
+
+/// Handoff between the Mac and the iPhone: the activity just opens the note;
+/// the text itself arrives through iCloud sync.
+enum Handoff {
+    static let activityType = "com.mirzapolat.penns.note"
+}
+
+/// Opens the note (the menu bar panel on the Mac). App-only.
 struct OpenNoteIntent: AppIntent {
     static let title: LocalizedStringResource = "Open Note"
+    #if os(macOS)
     static let description = IntentDescription("Opens your Penns note in the menu bar.")
+    #else
+    static let description = IntentDescription("Opens your Penns note, ready to write.")
+    #endif
     static let openAppWhenRun = true
 
     init() {}
@@ -44,12 +58,35 @@ struct PennsShortcuts: AppShortcutsProvider {
             shortTitle: "Archive Note",
             systemImageName: "archivebox"
         )
+        #if os(iOS)
+        AppShortcut(
+            intent: GoLiveIntent(),
+            phrases: ["Put my \(.applicationName) note on the Lock Screen", "\(.applicationName) go live"],
+            shortTitle: "Go Live",
+            systemImageName: "rectangle.inset.topleft.filled"
+        )
+        AppShortcut(
+            intent: EndLiveIntent(),
+            phrases: ["End \(.applicationName) Live Activity"],
+            shortTitle: "End Live Activity",
+            systemImageName: "rectangle.slash"
+        )
+        #endif
+        #if os(macOS)
         AppShortcut(
             intent: OpenNoteIntent(),
             phrases: ["Open \(.applicationName)"],
             shortTitle: "Open Note",
             systemImageName: "menubar.rectangle"
         )
+        #else
+        AppShortcut(
+            intent: OpenNoteIntent(),
+            phrases: ["Open \(.applicationName)"],
+            shortTitle: "Open Note",
+            systemImageName: "note.text"
+        )
+        #endif
     }
 }
 

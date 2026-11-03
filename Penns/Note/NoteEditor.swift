@@ -12,6 +12,7 @@ struct NoteEditor: NSViewRepresentable {
     var bottomInset: CGFloat
     var onEscape: () -> Void
     var onTyping: () -> Void
+    var formatBridge: FormatBridge?
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -54,6 +55,8 @@ struct NoteEditor: NSViewRepresentable {
         scrollView.documentView = textView
 
         context.coordinator.textView = textView
+        textView.onFormat = { [weak coordinator = context.coordinator] format in coordinator?.format(format) }
+        formatBridge?.perform = { [weak coordinator = context.coordinator] format in coordinator?.format(format) }
         context.coordinator.applyStyle()
         return scrollView
     }
@@ -65,7 +68,11 @@ struct NoteEditor: NSViewRepresentable {
         textView.onEscape = onEscape
 
         if textView.string != text {
+            // Text replaced from outside (reload, widget, Shortcut, sync). Undo
+            // steps recorded against the old text no longer match it and could
+            // wipe the note on ⌘Z, so they're dropped.
             textView.string = text
+            coordinator.undoManager.removeAllActions()
             coordinator.applyStyle()
         } else if coordinator.appliedStyle != style {
             coordinator.applyStyle()
@@ -89,9 +96,16 @@ struct NoteEditor: NSViewRepresentable {
         weak var textView: PennsTextView?
         var lastFocusToken = 0
         var appliedStyle: NoteStyle?
+        /// One undo stack per note editor, not the panel window's shared one, so
+        /// ⌘Z never replays edits from another note or from before a reload.
+        let undoManager = UndoManager()
 
         init(_ parent: NoteEditor) {
             self.parent = parent
+        }
+
+        func undoManager(for view: NSTextView) -> UndoManager? {
+            undoManager
         }
 
         func textDidChange(_ notification: Notification) {
@@ -103,6 +117,14 @@ struct NoteEditor: NSViewRepresentable {
 
         // Typing rules live in PennsKit (EditorRules) so they're unit-tested and
         // shared with the iOS editor. The delegate only applies their results.
+
+        /// Bold, italic, underline, strikethrough or a list, for the selection.
+        func format(_ format: TextFormat) {
+            guard let textView,
+                  let edit = EditorRules.format(format, selection: textView.selectedRange(), in: textView.string) else { return }
+            textView.window?.makeFirstResponder(textView)
+            apply(edit, in: textView)
+        }
 
         private func apply(_ edit: EditorRules.Edit, in textView: NSTextView) {
             textView.insertText(edit.replacement, replacementRange: edit.range)
@@ -142,13 +164,14 @@ struct NoteEditor: NSViewRepresentable {
             return false
         }
 
-        private static func paragraph(before: CGFloat = 0, after: CGFloat = 3) -> NSParagraphStyle {
+        private static func paragraph(before: CGFloat = 0, after: CGFloat = 3, headIndent: CGFloat = 0) -> NSParagraphStyle {
             let paragraph = NSMutableParagraphStyle()
+            paragraph.headIndent = headIndent
             paragraph.lineHeightMultiple = 1.1
             paragraph.paragraphSpacingBefore = before
             paragraph.paragraphSpacing = after
             paragraph.tabStops = []
-            paragraph.defaultTabInterval = 24
+            paragraph.defaultTabInterval = tabInterval
             return paragraph
         }
 
@@ -161,6 +184,62 @@ struct NoteEditor: NSViewRepresentable {
         private func headingFont(_ level: Int) -> NSFont {
             parent.style.nsFont(scale: NoteStyle.headingScale(level), weight: level == 3 ? .semibold : .bold)
         }
+
+        /// Wrapped lines of list and checklist items line up with the item's text.
+        private func styleListIndents(in storage: NSTextStorage, string: NSString) {
+            let font = parent.style.nsFont()
+            let space = (" " as NSString).size(withAttributes: [.font: font]).width
+            var location = 0
+            while location < string.length {
+                let lineRange = string.lineRange(for: NSRange(location: location, length: 0))
+                let line = string.substring(with: lineRange)
+                let indentation = Markdown.indentation(of: line)
+                let indentWidth = indentation.reduce(CGFloat(0)) { $0 + ($1 == "\t" ? Self.tabInterval : space) }
+                var markerWidth: CGFloat?
+                if Checklist.marker(of: line) != nil {
+                    markerWidth = round(font.pointSize * 1.15) + 7
+                } else if let marker = ListMarker.parse(line) {
+                    markerWidth = (ListMarker.marker(for: marker.kind) as NSString).size(withAttributes: [.font: font]).width
+                }
+                if let markerWidth {
+                    storage.addAttribute(.paragraphStyle, value: Self.paragraph(headIndent: indentWidth + markerWidth), range: lineRange)
+                }
+                location = NSMaxRange(lineRange)
+            }
+        }
+
+        /// Bold/italic fonts, underline and strikethrough for styled runs; their
+        /// markers are hidden like heading marks.
+        private func styleInline(in storage: NSTextStorage, string: String) {
+            let spans = InlineMarkup.spans(in: string)
+            guard !spans.isEmpty else { return }
+            for span in spans {
+                switch span.style {
+                case .bold, .italic:
+                    let trait: NSFontTraitMask = span.style == .bold ? .boldFontMask : .italicFontMask
+                    storage.enumerateAttribute(.font, in: span.content) { value, range, _ in
+                        guard let font = value as? NSFont else { return }
+                        storage.addAttribute(.font, value: NSFontManager.shared.convert(font, toHaveTrait: trait), range: range)
+                    }
+                case .underline:
+                    storage.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: span.content)
+                case .strikethrough:
+                    storage.addAttribute(.strikethroughStyle, value: NSUnderlineStyle.single.rawValue, range: span.content)
+                }
+            }
+            for span in spans {
+                for marker in [span.open, span.close] {
+                    storage.addAttributes([
+                        .foregroundColor: NSColor.clear,
+                        .font: NSFont.systemFont(ofSize: 0.01),
+                    ], range: marker)
+                    storage.removeAttribute(.underlineStyle, range: marker)
+                    storage.removeAttribute(.strikethroughStyle, range: marker)
+                }
+            }
+        }
+
+        private static let tabInterval: CGFloat = 24
 
         private func styleHeadings(in storage: NSTextStorage, string: NSString) {
             var location = 0
@@ -184,11 +263,13 @@ struct NoteEditor: NSViewRepresentable {
 
         /// Negative kerning for the 6 hidden marker characters, so the text starts
         /// 7 pt after the drawn circle instead of after "- [ ] ".
-        private var markerKern: CGFloat {
+        /// Measured per marker: "x" is wider than a space, and ticked items must
+        /// line up with open ones.
+        private func markerKern(for marker: String) -> CGFloat {
             let font = parent.style.nsFont()
-            let natural = (Checklist.uncheckedMarker as NSString).size(withAttributes: [.font: font]).width
+            let natural = (marker as NSString).size(withAttributes: [.font: font]).width
             let wanted = round(font.pointSize * 1.15) + 7
-            return (wanted - natural) / CGFloat(Checklist.uncheckedMarker.count)
+            return (wanted - natural) / CGFloat(max(marker.utf16.count, 1))
         }
 
         func applyStyle() {
@@ -201,10 +282,12 @@ struct NoteEditor: NSViewRepresentable {
             storage.beginEditing()
             storage.setAttributes(attributes, range: full)
             styleHeadings(in: storage, string: textView.string as NSString)
-            let markerKern = markerKern
+            styleListIndents(in: storage, string: textView.string as NSString)
+            styleInline(in: storage, string: textView.string)
+            let string = textView.string as NSString
             for line in Checklist.markerRanges(in: textView.string) {
                 storage.addAttribute(.foregroundColor, value: NSColor.clear, range: line.marker)
-                storage.addAttribute(.kern, value: markerKern, range: line.marker)
+                storage.addAttribute(.kern, value: markerKern(for: string.substring(with: line.marker)), range: line.marker)
                 if line.isChecked, line.content.length > 0 {
                     // Crossed out but still easy to read on glass.
                     let done = NSColor.labelColor.withAlphaComponent(0.8)
@@ -224,6 +307,23 @@ struct NoteEditor: NSViewRepresentable {
 
 final class PennsTextView: NSTextView {
     var onEscape: (() -> Void)?
+    var onFormat: ((TextFormat) -> Void)?
+
+    /// From the Format menu (main menu shortcuts, right-click, the "…" menu).
+    @objc func pennsFormat(_ sender: NSMenuItem) {
+        guard TextFormat.all.indices.contains(sender.tag) else { return }
+        onFormat?(TextFormat.all[sender.tag])
+    }
+
+    /// Right-click: Format comes first, then the system items.
+    override func menu(for event: NSEvent) -> NSMenu? {
+        let menu = super.menu(for: event) ?? NSMenu()
+        let item = NSMenuItem(title: "Format", action: nil, keyEquivalent: "")
+        item.submenu = MainMenu.formatMenu()
+        menu.insertItem(item, at: 0)
+        menu.insertItem(.separator(), at: 1)
+        return menu
+    }
     private var checkboxes: [(hitRect: NSRect, toggle: NSRange)] = []
 
     override func cancelOperation(_ sender: Any?) {

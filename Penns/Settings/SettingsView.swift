@@ -136,23 +136,44 @@ private struct TextStyleSection: View {
     @AppStorage(NoteStyle.fontKey, store: ProfileSelection.defaults) private var fontValue = "system"
     @AppStorage(NoteStyle.sizeKey, store: ProfileSelection.defaults) private var fontSize = NoteStyle.defaultSize
 
-    private static let families = NSFontManager.shared.availableFontFamilies.sorted()
+    @State private var showingFonts = false
 
     var body: some View {
         let style = NoteStyle(fontValue: fontValue, size: fontSize)
         Section("Text") {
-            Picker("Font", selection: $fontValue) {
-                ForEach(NoteFont.builtIn, id: \.self) { font in
-                    Text(font.displayName)
-                        .font(NoteStyle(font: font, size: 13).swiftUIFont())
-                        .tag(font.storageValue)
+            // The four system styles (plus a chosen family); every other
+            // installed font is one click away in "More Fonts…".
+            LabeledContent("Font") {
+                HStack(spacing: 8) {
+                    Picker("Font", selection: $fontValue) {
+                        ForEach(NoteFont.builtIn, id: \.self) { font in
+                            Text(font.displayName)
+                                .font(NoteStyle(font: font, size: 13).swiftUIFont())
+                                .tag(font.storageValue)
+                        }
+                        if case .family(let family) = style.font {
+                            Divider()
+                            Text(family)
+                                .font(.custom(family, size: 13))
+                                .tag(fontValue)
+                        }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                    Button("More Fonts…") { showingFonts = true }
                 }
-                Divider()
-                ForEach(Self.families, id: \.self) { family in
-                    Text(family)
-                        .font(.custom(family, size: 13))
-                        .tag(NoteFont.family(family).storageValue)
+            }
+            .sheet(isPresented: $showingFonts) {
+                NavigationStack {
+                    FontList(selection: $fontValue) { showingFonts = false }
+                        .navigationTitle("Fonts")
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Done") { showingFonts = false }
+                            }
+                        }
                 }
+                .frame(width: 360, height: 460)
             }
             LabeledContent("Size") {
                 HStack(spacing: 10) {

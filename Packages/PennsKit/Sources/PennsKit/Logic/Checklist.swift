@@ -96,9 +96,10 @@ public enum Checklist {
         return lines.joined(separator: "\n")
     }
 
-    /// Text for read-only surfaces: markers become "○ " / "✓ ", heading marks are dropped.
+    /// Text for read-only surfaces: markers become "○ " / "✓ ", heading marks and
+    /// bold/italic/underline/strikethrough markers are dropped.
     public static func displayText(_ text: String) -> String {
-        parse(text).map { line in
+        parse(InlineMarkup.strip(text)).map { line in
             switch line {
             case .text(let string):
                 Markdown.heading(of: string)?.text ?? string

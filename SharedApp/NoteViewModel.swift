@@ -1,4 +1,8 @@
+#if os(macOS)
 import AppKit
+#else
+import UIKit
+#endif
 import CoreData
 import Observation
 import os
@@ -6,6 +10,13 @@ import PennsKit
 import SwiftData
 import SwiftUI
 import WidgetKit
+
+/// Lets menus outside the editor (the "…" menu, the iOS "Aa" button) format
+/// the editor's current selection. The editor sets `perform`.
+@MainActor
+final class FormatBridge {
+    var perform: ((TextFormat) -> Void)?
+}
 
 struct Toast: Identifiable {
     let id = UUID()
@@ -32,6 +43,11 @@ final class NoteViewModel {
 
     /// Called whenever the note's text or identity changes (menu bar title).
     @ObservationIgnored var onNoteChange: (() -> Void)?
+    @ObservationIgnored let formatBridge = FormatBridge()
+
+    func format(_ format: TextFormat) {
+        formatBridge.perform?(format)
+    }
 
     @ObservationIgnored private let container: ModelContainer
     @ObservationIgnored private var store: NoteStore
@@ -131,14 +147,46 @@ final class NoteViewModel {
     /// Reads the store fresh, e.g. after a widget button, Shortcut, Focus change
     /// or iCloud sync changed it.
     func reload() {
-        flushPendingSave()
+        reload(fromSync: false)
+    }
+
+    /// `fromSync`: iCloud brought in changes from another device. If this
+    /// device has unsaved typing, saving it first would silently replace the
+    /// other device's version (or vice versa). Instead, the typing stays the
+    /// note and the other version goes to the archive.
+    private func reload(fromSync: Bool) {
+        let unsaved: (noteID: UUID, text: String)? = fromSync && saveTask != nil ? (note.id, note.text) : nil
+        if unsaved == nil {
+            flushPendingSave()
+        } else {
+            saveTask?.cancel()
+            saveTask = nil
+        }
         store = NoteStore(context: ModelContext(container))
         store.applyDueTransitions()
         profile = store.currentProfile(preferredID: ProfileSelection.preferredID)
         note = store.activeNote(in: profile)
-        persist(notify: false)
+
+        var kept: Note?
+        if let unsaved {
+            if note.id == unsaved.noteID {
+                if note.text != unsaved.text {
+                    kept = store.keepConflictCopy(note.text, of: note)
+                    store.setText(unsaved.text, of: note)
+                }
+            } else {
+                // The note was archived or replaced elsewhere: keep the typing.
+                kept = store.keepConflictCopy(unsaved.text, of: note)
+            }
+        }
+        persist(notify: kept != nil)
         refreshArchive()
         onNoteChange?()
+        if kept != nil {
+            showToast("Edited on another device — other version in Archive", actionTitle: "Show") { [weak self] in
+                self?.showingArchive = true
+            }
+        }
     }
 
     /// Writes any pending edit to disk now (panel closing, app quitting).
@@ -311,7 +359,7 @@ final class NoteViewModel {
             forName: .NSPersistentStoreRemoteChange, object: nil, queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated {
-                self?.reload()
+                self?.reload(fromSync: true)
                 WidgetCenter.shared.reloadAllTimelines()
             }
         })
@@ -323,7 +371,7 @@ final class NoteViewModel {
 
     // MARK: Helpers
 
-    private func showToast(_ message: String, actionTitle: String?, action: (@MainActor () -> Void)?) {
+    func showToast(_ message: String, actionTitle: String?, action: (@MainActor () -> Void)?) {
         toast = Toast(message: message, actionTitle: actionTitle, action: action)
         toastTask?.cancel()
         toastTask = Task { [weak self] in
@@ -334,7 +382,12 @@ final class NoteViewModel {
     }
 
     private func animate(_ body: () -> Void) {
-        if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+        #if os(macOS)
+        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        #else
+        let reduceMotion = UIAccessibility.isReduceMotionEnabled
+        #endif
+        if reduceMotion {
             withAnimation(.easeInOut(duration: 0.2), body)
         } else {
             withAnimation(.spring(duration: 0.35, bounce: 0.15), body)

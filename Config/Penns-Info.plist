@@ -27,6 +27,10 @@
 			<dict/>
 		</dict>
 	</array>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>com.mirzapolat.penns.note</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

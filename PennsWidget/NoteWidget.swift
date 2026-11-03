@@ -129,12 +129,12 @@ struct NoteWidgetView: View {
         switch line {
         case .text(let text):
             if let heading = Markdown.heading(of: text) {
-                Text(heading.text)
+                Text(InlineMarkup.attributed(heading.text))
                     .font(font(scale: NoteStyle.headingScale(heading.level), weight: heading.level == 3 ? .semibold : .bold))
                     .foregroundStyle(.primary)
                     .widgetAccentable()
             } else {
-                Text(text.isEmpty ? " " : text.replacingOccurrences(of: "\t", with: "    "))
+                Text(InlineMarkup.attributed(text.isEmpty ? " " : text.replacingOccurrences(of: "\t", with: "    ")))
                     .font(font())
                     .foregroundStyle(.primary)
                     .widgetAccentable()
@@ -146,7 +146,7 @@ struct NoteWidgetView: View {
                         .font(.system(size: textSize + 1))
                         .foregroundStyle(item.isChecked ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
                         .widgetAccentable()
-                    Text(item.title)
+                    Text(InlineMarkup.attributed(item.title))
                         .font(font())
                         .strikethrough(item.isChecked)
                         .foregroundStyle(.primary)
@@ -213,3 +213,77 @@ struct NoteWidgetView: View {
     NoteEntry.sample
     NoteEntry(date: .now, text: "", expiresAt: nil)
 }
+
+#if os(iOS)
+/// The Lock Screen: the first lines of the note (exactly where the editor's
+/// faint line sits) or just the first line next to the clock.
+struct LockScreenNoteWidget: Widget {
+    var body: some WidgetConfiguration {
+        AppIntentConfiguration(kind: "LockScreenNoteWidget", intent: NoteWidgetIntent.self, provider: NoteProvider()) { entry in
+            LockScreenNoteView(entry: entry)
+        }
+        .configurationDisplayName("Note")
+        .description("The first lines of your note.")
+        .supportedFamilies([.accessoryRectangular, .accessoryInline])
+    }
+}
+
+struct LockScreenNoteView: View {
+    let entry: NoteEntry
+    @Environment(\.widgetFamily) private var family
+
+    var body: some View {
+        Group {
+            if family == .accessoryInline {
+                inline
+            } else {
+                rectangular
+            }
+        }
+        .containerBackground(.clear, for: .widget)
+        .widgetURL(URL(string: "penns://note"))
+    }
+
+    private var inline: some View {
+        let first = Note.firstLine(of: entry.text)
+        return Text(first.isEmpty ? "Penns" : first)
+    }
+
+    private var rectangular: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            if entry.isEmpty {
+                Text("Tap to write")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(Array(LockScreenFold.visibleLines(of: entry.text).enumerated()), id: \.offset) { _, line in
+                    lineView(line)
+                }
+            }
+        }
+        .font(.system(size: 15))
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .widgetAccentable()
+    }
+
+    @ViewBuilder
+    private func lineView(_ line: Checklist.Line) -> some View {
+        switch line {
+        case .text(let text):
+            let shown = Markdown.heading(of: text)?.text ?? text
+            Text(InlineMarkup.attributed(shown.isEmpty ? " " : shown.replacingOccurrences(of: "\t", with: "  ")))
+                .fontWeight(Markdown.heading(of: text) == nil ? .regular : .semibold)
+                .lineLimit(1)
+        case .item(let item):
+            HStack(spacing: 4) {
+                Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 13))
+                Text(InlineMarkup.attributed(item.title))
+                    .strikethrough(item.isChecked)
+                    .opacity(item.isChecked ? 0.7 : 1)
+                    .lineLimit(1)
+            }
+            .padding(.leading, CGFloat(item.indent) * 10)
+        }
+    }
+}
+#endif

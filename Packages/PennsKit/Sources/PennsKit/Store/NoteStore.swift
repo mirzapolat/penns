@@ -148,6 +148,21 @@ public final class NoteStore {
         return copy
     }
 
+    /// Keeps `text` as an archived note in `note`'s profile. Used when sync
+    /// brings in a different version of a note that also has unsaved edits
+    /// here: one version stays the note, the other is kept, nothing is lost.
+    /// Returns `nil` (and keeps nothing) when `text` is blank or the same.
+    @discardableResult
+    public func keepConflictCopy(_ text: String, of note: Note) -> Note? {
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, text != note.text else { return nil }
+        let copy = Note(text: text, profile: nil, isActive: false, now: now)
+        copy.createdAt = note.createdAt
+        copy.archivedAt = now
+        context.insert(copy)
+        copy.profile = note.profile ?? defaultProfile()
+        return copy
+    }
+
     /// Expires the note at an exact moment; `nil` means "until done".
     public func setExpiry(_ date: Date?, of note: Note) {
         guard let date else {
@@ -343,6 +358,24 @@ public final class NoteStore {
                 retire(note)
             }
         }
+        return true
+    }
+
+    /// Applies `change` to a freshly fetched copy of the profile in a new context
+    /// and saves it. SwiftData writes every attribute of a changed object, so a
+    /// long-lived context (Settings) editing an old copy would put back values
+    /// that another context changed since, such as `clearedCount`.
+    /// Returns false if the profile no longer exists.
+    @discardableResult
+    public static func updateProfile(
+        id: UUID,
+        in container: ModelContainer,
+        _ change: (Profile, NoteStore) -> Void
+    ) throws -> Bool {
+        let store = NoteStore(context: ModelContext(container))
+        guard let profile = store.profile(id: id) else { return false }
+        change(profile, store)
+        try store.save()
         return true
     }
 

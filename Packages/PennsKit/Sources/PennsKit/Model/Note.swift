@@ -41,13 +41,16 @@ public extension Note {
     }
 
     /// First non-empty line, with any checklist marker removed.
-    var firstLine: String {
+    var firstLine: String { Note.firstLine(of: text) }
+
+    /// First non-empty line of `text`, without checklist or heading marks.
+    static func firstLine(of text: String) -> String {
         let line = text
             .split(separator: "\n", omittingEmptySubsequences: true)
             .lazy
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .first { !$0.isEmpty } ?? ""
-        let stripped = Checklist.stripMarker(line)
+        let stripped = Checklist.stripMarker(InlineMarkup.strip(line))
         return Markdown.heading(of: stripped)?.text ?? stripped
     }
 }

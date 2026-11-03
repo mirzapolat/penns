@@ -57,7 +57,8 @@ struct NoteScreen: View {
                         focusToken: model.focusToken,
                         bottomInset: Self.toolbarClearance,
                         onEscape: close,
-                        onTyping: model.noteTyping
+                        onTyping: model.noteTyping,
+                        formatBridge: model.formatBridge
                     )
                     if model.note.text.isEmpty {
                         Text(model.placeholder)
@@ -149,12 +150,32 @@ private struct BottomBar: View {
                     .help("Share note")
                     .accessibilityLabel("Share note")
 
-                    ToolbarIcon(systemName: "clock.arrow.circlepath", help: "Archive (⌘Y)") {
-                        model.showingArchive = true
+                    Menu {
+                        ForEach(TextFormat.styles, id: \.self) { format in
+                            Button(format.title, systemImage: format.systemImage) { model.format(format) }
+                        }
+                        Divider()
+                        ForEach(TextFormat.lists, id: \.self) { format in
+                            Button(format.title, systemImage: format.systemImage) { model.format(format) }
+                        }
+                    } label: {
+                        Image(systemName: "textformat")
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(width: 32, height: NoteScreen.pillHeight)
+                            .contentShape(Rectangle())
                     }
-                    .keyboardShortcut("y", modifiers: .command)
+                    .menuStyle(.button)
+                    .buttonStyle(.plain)
+                    .menuIndicator(.hidden)
+                    .fixedSize()
+                    .help("Format")
+                    .accessibilityLabel("Format")
 
                     Menu {
+                        Button("Show Archive", systemImage: "clock.arrow.circlepath") {
+                            model.showingArchive = true
+                        }
+                        Divider()
                         Button("Delete Note", role: .destructive, action: model.deleteNote)
                             .disabled(model.note.isBlank)
                         Divider()
@@ -185,10 +206,12 @@ private struct BottomBar: View {
         }
         .background {
             // Keyboard-only shortcuts, kept out of the row so they add no spacing:
-            // ⌥⌘⌫ deletes the note, ⌘1…⌘9 switch profiles.
+            // ⌥⌘⌫ deletes the note, ⌘Y shows the archive, ⌘1…⌘9 switch profiles.
             ZStack {
                 Button("Delete Note", action: model.deleteNote)
                     .keyboardShortcut(.delete, modifiers: [.command, .option])
+                Button("Show Archive") { model.showingArchive = true }
+                    .keyboardShortcut("y", modifiers: .command)
                 ForEach(0..<min(model.profiles.count, 9), id: \.self) { index in
                     Button("Profile \(index + 1)") { model.switchProfile(at: index) }
                         .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: .command)

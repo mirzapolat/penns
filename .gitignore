@@ -131,3 +131,9 @@ compile_commands.json
 
 # ── Claude Code local settings ───────────────────────────────
 .claude/settings.local.json
+
+# ── Personal signing (Team ID) ───────────────────────────────
+Config/Local.xcconfig
+
+# ── Editor index store (sourcekit-lsp) ───────────────────────
+-Xcc/

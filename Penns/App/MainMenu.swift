@@ -1,4 +1,5 @@
 import AppKit
+import PennsKit
 
 /// Penns has no visible menu bar, but the main menu still routes key
 /// equivalents — without it ⌘C, ⌘V and ⌘Z would not work in the editor.
@@ -27,8 +28,29 @@ enum MainMenu {
         edit.addItem(withTitle: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
         edit.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         main.addItem(submenu: edit)
+        main.addItem(submenu: formatMenu())
 
         return main
+    }
+
+    /// Bold, italic, underline, strikethrough and lists, with the Apple Notes
+    /// shortcuts. Sent to the editor through the responder chain.
+    @MainActor
+    static func formatMenu() -> NSMenu {
+        let menu = NSMenu(title: "Format")
+        for (index, format) in TextFormat.all.enumerated() {
+            if index == TextFormat.styles.count { menu.addItem(.separator()) }
+            let shortcut = format.keyEquivalent
+            let item = menu.addItem(
+                withTitle: format.title,
+                action: #selector(PennsTextView.pennsFormat(_:)),
+                keyEquivalent: shortcut.key
+            )
+            item.keyEquivalentModifierMask = shortcut.shift ? [.command, .shift] : [.command]
+            item.tag = index
+            item.image = NSImage(systemSymbolName: format.systemImage, accessibilityDescription: nil)
+        }
+        return menu
     }
 }
 
