@@ -14,6 +14,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         applyDockPreference()
         NSApp.mainMenu = MainMenu.make(settingsTarget: self, settingsAction: #selector(openSettings))
+        if let failure = SharedContainer.loadFailure {
+            showStoreFailure(failure)
+            return
+        }
         NSApp.servicesProvider = self
         NSUpdateDynamicServices()
 
@@ -53,6 +57,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func application(_ application: NSApplication, open urls: [URL]) {
         // penns://note (widget) opens the note; penns://archive opens the archive.
+        guard statusController != nil else { return }
         statusController.show()
         if urls.contains(where: { $0.host == "archive" }) {
             model.showingArchive = true
@@ -65,20 +70,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         continue userActivity: NSUserActivity,
         restorationHandler: @escaping ([any NSUserActivityRestoring]) -> Void
     ) -> Bool {
-        guard userActivity.activityType == Handoff.activityType else { return false }
+        guard userActivity.activityType == Handoff.activityType, statusController != nil else { return false }
         statusController.show()
         return true
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        statusController.show()
+        statusController?.show()
         return false
     }
 
     /// Services menu → "Add to Penns": appends the selected text in any app.
     @objc func addToNote(_ pasteboard: NSPasteboard, userData: String?, error: AutoreleasingUnsafeMutablePointer<NSString?>) {
         guard let text = pasteboard.string(forType: .string)?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !text.isEmpty else {
+              !text.isEmpty, model != nil else {
             error.pointee = "No text to add." as NSString
             return
         }
@@ -97,6 +102,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func openSettings() {
         statusController.close()
         settings.show()
+    }
+
+    /// The store didn't open. Typing into the empty stand-in would be lost,
+    /// so Penns explains, offers the backups, and quits.
+    private func showStoreFailure(_ details: String) {
+        NSApp.activate()
+        let alert = NSAlert()
+        alert.alertStyle = .critical
+        alert.messageText = String(localized: "Penns couldn't open your note")
+        alert.informativeText = String(localized: "Your note is still on this Mac; nothing was changed or deleted. Quit Penns and open it again. If this keeps happening, copies of your note are in the Backups folder.") + "\n\n" + details
+        alert.addButton(withTitle: String(localized: "Quit"))
+        alert.addButton(withTitle: String(localized: "Show Backups"))
+        if alert.runModal() == .alertSecondButtonReturn {
+            let store = SharedContainer.storeURL()
+            let backups = StoreBackup.backups(forStoreAt: store)
+            NSWorkspace.shared.activateFileViewerSelecting([backups.first ?? store])
+        }
+        NSApp.terminate(nil)
     }
 
     private func applyDockPreference() {

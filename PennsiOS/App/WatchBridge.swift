@@ -2,6 +2,7 @@ import Foundation
 import PennsKit
 import SwiftData
 import WatchConnectivity
+import os
 
 /// The iPhone's half of the watch connection. The iPhone's store is the only
 /// source of truth: it sends the watch a snapshot of every profile's note and
@@ -10,6 +11,7 @@ final class WatchBridge: NSObject, WCSessionDelegate, @unchecked Sendable {
     static let shared = WatchBridge()
 
     private let queue = DispatchQueue(label: "com.mirzapolat.penns.watch")
+    private let logger = Logger(subsystem: "com.mirzapolat.penns", category: "watch")
     private var pendingPush: DispatchWorkItem?
 
     private var session: WCSession? { WCSession.isSupported() ? .default : nil }
@@ -48,7 +50,11 @@ final class WatchBridge: NSObject, WCSessionDelegate, @unchecked Sendable {
     /// signal, so the open note, widgets and Live Activity follow.
     private func handle(_ message: [String: Any]) -> [String: Any] {
         guard let command = WatchCommand(message: message) else { return [:] }
-        _ = try? IntentStore.mutate { store in command.apply(to: store) }
+        do {
+            _ = try IntentStore.mutate { store in command.apply(to: store) }
+        } catch {
+            logger.error("Watch command failed: \(error.localizedDescription, privacy: .public)")
+        }
         Task { await LiveNote.refreshAll() }
         let current = snapshot()
         push()

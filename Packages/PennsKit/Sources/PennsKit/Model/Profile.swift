@@ -19,10 +19,16 @@ public final class Profile {
     @Relationship(deleteRule: .cascade, inverse: \Note.profile)
     public var notes: [Note]? = []
 
-    public init(name: String = "Default", sortIndex: Int = 0, colorHex: String = ProfileColors.all[0]) {
-        self.id = UUID()
+    public init(id: UUID = UUID(), name: String = "Default", sortIndex: Int = 0, colorHex: String = ProfileColors.all[0]) {
+        self.id = id
         self.name = name
         self.sortIndex = sortIndex
         self.colorHex = colorHex
     }
+}
+
+public extension Profile {
+    /// Every device creates its first profile with this id, so when iCloud
+    /// brings two of them together they're recognised as the same profile.
+    static let defaultID = UUID(uuidString: "5E1F0D3A-7C2B-4E6A-9B1D-000000000001")!
 }

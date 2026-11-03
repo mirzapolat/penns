@@ -29,17 +29,19 @@ public final class NoteStore {
 
     public func defaultProfile() -> Profile {
         let descriptor = FetchDescriptor<Profile>(sortBy: [SortDescriptor(\.sortIndex)])
-        if let profile = (try? context.fetch(descriptor))?.first {
+        if let profile = unique(fetchProfiles(descriptor)).first {
             return profile
         }
-        let profile = Profile()
+        let profile = Profile(id: Profile.defaultID)
         context.insert(profile)
         return profile
     }
 
+    /// Every profile once. iCloud can hold several copies of one profile
+    /// (same id, created on two devices before they synced); they count as one.
     public func profiles() -> [Profile] {
         let descriptor = FetchDescriptor<Profile>(sortBy: [SortDescriptor(\.sortIndex)])
-        let profiles = (try? context.fetch(descriptor)) ?? []
+        let profiles = unique(fetchProfiles(descriptor))
         return profiles.isEmpty ? [defaultProfile()] : profiles
     }
 
@@ -72,7 +74,9 @@ public final class NoteStore {
         for note in notes(in: profile) {
             context.delete(note)
         }
-        context.delete(profile)
+        for copy in copies(of: profile.id) {
+            context.delete(copy)
+        }
         return true
     }
 
@@ -311,8 +315,9 @@ public final class NoteStore {
         for profile in profiles() where profile.morningResetEnabled {
             let moment = Lifecycle.resetMoment(on: now, minutes: profile.morningResetMinutes, calendar: calendar)
             let today = Lifecycle.dayKey(now, calendar: calendar)
-            guard now >= moment, profile.lastResetDay != today else { continue }
-            profile.lastResetDay = today
+            let copies = copies(of: profile.id)
+            guard now >= moment, !copies.contains(where: { $0.lastResetDay == today }) else { continue }
+            for copy in copies { copy.lastResetDay = today }
             let note = activeNote(in: profile)
             if !note.isBlank, note.updatedAt < moment {
                 archive(note)
@@ -344,12 +349,17 @@ public final class NoteStore {
     }
 
     /// Fixes profiles that ended up with several active notes (e.g. after sync):
-    /// the most recently edited stays active, others are archived (blank ones deleted).
+    /// the most recently edited note with text stays active, others are
+    /// archived (blank ones deleted). A blank note never wins over text, so a
+    /// fresh device can't push the real note into the archive.
     @discardableResult
     public func repair(_ profile: Profile) -> Bool {
         let active = notes(in: profile)
             .filter(\.isActive)
-            .sorted { $0.updatedAt > $1.updatedAt }
+            .sorted { lhs, rhs in
+                if lhs.isBlank != rhs.isBlank { return !lhs.isBlank }
+                return lhs.updatedAt > rhs.updatedAt
+            }
         guard active.count > 1 else { return false }
         for note in active.dropFirst() {
             if note.isBlank {
@@ -359,6 +369,24 @@ public final class NoteStore {
             }
         }
         return true
+    }
+
+    /// Brings copies of the same profile (see `profiles()`) in line and fixes
+    /// duplicate active notes. Copies are never deleted: deleting a profile
+    /// cascades to its notes, and two devices could each delete the other's.
+    public func reconcile() {
+        let all = fetchProfiles(FetchDescriptor<Profile>())
+        for (_, copies) in Dictionary(grouping: all, by: \.id) where copies.count > 1 {
+            let cleared = copies.map(\.clearedCount).max() ?? 0
+            let resetDay = copies.compactMap(\.lastResetDay).max()
+            for copy in copies {
+                if copy.clearedCount != cleared { copy.clearedCount = cleared }
+                if copy.lastResetDay != resetDay { copy.lastResetDay = resetDay }
+            }
+        }
+        for profile in unique(all) {
+            repair(profile)
+        }
     }
 
     /// Applies `change` to a freshly fetched copy of the profile in a new context
@@ -375,6 +403,17 @@ public final class NoteStore {
         let store = NoteStore(context: ModelContext(container))
         guard let profile = store.profile(id: id) else { return false }
         change(profile, store)
+        // Copies of the profile from another device get the same settings.
+        if !profile.isDeleted {
+            for copy in store.copies(of: id) where copy !== profile && !copy.isDeleted {
+                copy.name = profile.name
+                copy.colorHex = profile.colorHex
+                copy.sortIndex = profile.sortIndex
+                copy.morningResetEnabled = profile.morningResetEnabled
+                copy.morningResetMinutes = profile.morningResetMinutes
+                copy.lastResetDay = profile.lastResetDay
+            }
+        }
         try store.save()
         return true
     }
@@ -386,6 +425,20 @@ public final class NoteStore {
     }
 
     // MARK: Private
+
+    private func fetchProfiles(_ descriptor: FetchDescriptor<Profile>) -> [Profile] {
+        ((try? context.fetch(descriptor)) ?? []).filter { !$0.isDeleted }
+    }
+
+    /// The first copy of each profile, keeping order.
+    private func unique(_ profiles: [Profile]) -> [Profile] {
+        var seen = Set<UUID>()
+        return profiles.filter { seen.insert($0.id).inserted }
+    }
+
+    private func copies(of id: UUID) -> [Profile] {
+        fetchProfiles(FetchDescriptor<Profile>()).filter { $0.id == id }
+    }
 
     private func allNotes() -> [Note] {
         (try? context.fetch(FetchDescriptor<Note>())) ?? []

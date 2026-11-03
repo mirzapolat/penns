@@ -34,6 +34,8 @@ final class ShareModel {
     var profiles: [ProfileOption] = []
     var profileID: UUID?
     private(set) var isLoading = true
+    /// Set when the text couldn't be added; the sheet stays open so nothing is lost.
+    private(set) var errorMessage: String?
 
     @ObservationIgnored private weak var context: NSExtensionContext?
 
@@ -69,6 +71,10 @@ final class ShareModel {
     }
 
     func add() {
+        guard SharedContainer.isAvailable else {
+            errorMessage = "Penns couldn't open your note. Open the Penns app, then share again."
+            return
+        }
         let store = NoteStore(context: ModelContext(SharedContainer.shared))
         store.applyDueTransitions()
         let profile = profileID.flatMap { store.profile(id: $0) }
@@ -80,7 +86,12 @@ final class ShareModel {
             .filter { !$0.isEmpty }
             .joined(separator: " ")
         store.append(line, in: profile)
-        try? store.save()
+        do {
+            try store.save()
+        } catch {
+            errorMessage = "Couldn't add this to your note. Copy the text and try again."
+            return
+        }
         ChangeSignal.post()
         WidgetCenter.shared.reloadAllTimelines()
         context?.completeRequest(returningItems: nil)
@@ -122,9 +133,15 @@ private struct ShareView: View {
                     .pickerStyle(.menu)
                 }
 
-                Text("Added as a new line at the end of your note.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                if let error = model.errorMessage {
+                    Text(error)
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                } else {
+                    Text("Added as a new line at the end of your note.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
                 Spacer(minLength: 0)
             }
             .padding(16)

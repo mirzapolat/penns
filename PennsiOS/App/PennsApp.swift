@@ -14,6 +14,16 @@ struct PennsApp: App {
 
     var body: some Scene {
         WindowGroup {
+            if let failure = SharedContainer.loadFailure {
+                StoreUnavailableView(details: failure)
+            } else {
+                noteView
+            }
+        }
+    }
+
+    private var noteView: some View {
+        Group {
             NoteScreen(model: model)
                 .environment(live)
                 .onOpenURL(perform: open)

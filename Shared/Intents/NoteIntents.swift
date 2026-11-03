@@ -8,6 +8,7 @@ import WidgetKit
 /// widgets. Used by every intent, in the app and in the widget extension.
 enum IntentStore {
     static func mutate<T>(_ body: (NoteStore) throws -> T) throws -> T {
+        try SharedContainer.requireAvailable()
         let store = NoteStore(context: ModelContext(SharedContainer.shared))
         store.applyDueTransitions()
         let result = try body(store)

@@ -11,32 +11,87 @@ public enum SharedContainer {
     /// Info.plist key with the iCloud container ("iCloud.com.…"). Empty = sync off.
     public static let cloudKitInfoKey = "PennsCloudKitContainer"
 
-    public static let schema = Schema([Note.self, Profile.self])
+    public static let schema = Schema(versionedSchema: PennsSchemaV1.self)
 
     /// The process-wide container. Each caller should create its own
     /// `ModelContext` from it so it always reads fresh data.
-    public static let shared: ModelContainer = make()
+    public static var shared: ModelContainer { opened.container }
+
+    /// Why the store on disk couldn't be opened, or nil when it's fine. While
+    /// set, `shared` is an empty in-memory store: nothing typed there is kept,
+    /// so the apps show an error instead of the note and extensions refuse to
+    /// write (`requireAvailable()`). The file on disk is left untouched.
+    public static var loadFailure: String? { opened.failure }
+    public static var isAvailable: Bool { loadFailure == nil }
+
+    public struct UnavailableError: LocalizedError {
+        public var errorDescription: String? { "Penns couldn't open your note. Open the Penns app to see what happened." }
+    }
+
+    /// Throws when the note can't be saved because the store didn't open.
+    public static func requireAvailable() throws {
+        if !isAvailable { throw UnavailableError() }
+    }
 
     private static let logger = Logger(subsystem: "com.mirzapolat.penns", category: "store")
+    private static let opened: (container: ModelContainer, failure: String?) = openShared()
 
-    public static func make(inMemory: Bool = false) -> ModelContainer {
-        let configuration: ModelConfiguration
-        if inMemory {
-            configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-        } else {
-            let url = storeURL()
+    /// An in-memory container for tests and previews.
+    public static func make(inMemory: Bool = true) -> ModelContainer {
+        precondition(inMemory, "Use SharedContainer.shared for the store on disk")
+        return memoryContainer()
+    }
+
+    /// Opens the store at `url` with the versioned schema and migration plan.
+    public static func open(at url: URL, cloudKitDatabase: ModelConfiguration.CloudKitDatabase) throws -> ModelContainer {
+        try ModelContainer(
+            for: schema,
+            migrationPlan: PennsMigrationPlan.self,
+            configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: cloudKitDatabase)
+        )
+    }
+
+    private static func openShared() -> (container: ModelContainer, failure: String?) {
+        let url = storeURL()
+        let isApp = Bundle.main.bundleURL.pathExtension != "appex"
+        if isApp {
             migrateLegacyStoreIfNeeded(to: url)
-            configuration = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: cloudKitDatabase)
+            backUpBeforeOpening(url)
         }
         do {
-            return try ModelContainer(for: schema, configurations: configuration)
+            return (try open(at: url, cloudKitDatabase: cloudKitDatabase), nil)
         } catch {
-            logger.fault("Opening the store failed, falling back to memory: \(error.localizedDescription, privacy: .public)")
-            // Keep the app usable rather than crash-looping; nothing is written to disk.
-            return try! ModelContainer(
-                for: schema,
-                configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-            )
+            logger.error("Opening the store failed, retrying: \(error.localizedDescription, privacy: .public)")
+        }
+        // Another process (a widget, an intent) may be holding the file for a moment.
+        Thread.sleep(forTimeInterval: 0.5)
+        do {
+            return (try open(at: url, cloudKitDatabase: cloudKitDatabase), nil)
+        } catch {
+            logger.fault("Opening the store failed: \(String(describing: error), privacy: .public)")
+            if isApp { StoreBackup.backUp(storeAt: url) }
+            return (memoryContainer(), error.localizedDescription)
+        }
+    }
+
+    /// A backup at most every 12 hours, and always when the app version
+    /// changed (a new version may migrate the store).
+    private static func backUpBeforeOpening(_ url: URL) {
+        let info = Bundle.main.infoDictionary ?? [:]
+        let version = "\(info["CFBundleShortVersionString"] as? String ?? "")-\(info["CFBundleVersion"] as? String ?? "")"
+        let marker = StoreBackup.backupsDirectory(forStoreAt: url).appending(path: ".version")
+        let lastVersion = try? String(contentsOf: marker, encoding: .utf8)
+        let force = lastVersion != version
+        if StoreBackup.backUpIfDue(storeAt: url, force: force) != nil || lastVersion == nil {
+            try? version.write(to: marker, atomically: true, encoding: .utf8)
+        }
+    }
+
+    private static func memoryContainer() -> ModelContainer {
+        do {
+            return try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
+        } catch {
+            fatalError("An in-memory store can't fail to open: \(error)")
         }
     }
 

@@ -56,11 +56,14 @@ final class NoteViewModel {
     @ObservationIgnored private var controlsTask: Task<Void, Never>?
     @ObservationIgnored private var typingBurstStart: Date?
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
+    /// Plain-text copy of the note while saving fails; nil once a save works.
+    @ObservationIgnored private var rescueFile: URL?
     @ObservationIgnored private let logger = Logger(subsystem: "com.mirzapolat.penns", category: "note")
 
     init(container: ModelContainer) {
         self.container = container
         let store = NoteStore(context: ModelContext(container))
+        store.reconcile()
         store.applyDueTransitions()
         let profile = store.currentProfile(preferredID: ProfileSelection.preferredID)
         self.store = store
@@ -163,6 +166,7 @@ final class NoteViewModel {
             saveTask = nil
         }
         store = NoteStore(context: ModelContext(container))
+        if fromSync { store.reconcile() }
         store.applyDueTransitions()
         profile = store.currentProfile(preferredID: ProfileSelection.preferredID)
         note = store.activeNote(in: profile)
@@ -183,6 +187,7 @@ final class NoteViewModel {
         refreshArchive()
         onNoteChange?()
         if kept != nil {
+            logger.notice("Sync conflict: kept the other version in the archive")
             showToast("Edited on another device — other version in Archive", actionTitle: "Show") { [weak self] in
                 self?.showingArchive = true
             }
@@ -331,13 +336,31 @@ final class NoteViewModel {
         do {
             guard store.context.hasChanges else { return }
             try store.save()
+            if rescueFile != nil {
+                rescueFile = nil
+                logger.notice("Saving works again")
+            }
         } catch {
-            logger.error("Saving failed: \(error.localizedDescription, privacy: .public)")
+            logger.fault("Saving failed: \(String(describing: error), privacy: .public)")
+            keepRescueCopy()
             return
         }
         guard notify else { return }
         ChangeSignal.post(sender: self)
         WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    /// Saving failed: keep the text in a plain file next to the store so it
+    /// survives a quit or crash. The store keeps the change and tries again on
+    /// the next save.
+    private func keepRescueCopy() {
+        let text = note.text
+        if let rescueFile {
+            try? text.write(to: rescueFile, atomically: true, encoding: .utf8)
+            return
+        }
+        rescueFile = StoreBackup.writeRescueCopy(text, storeAt: SharedContainer.storeURL())
+        showToast("Couldn't save your note. A copy is kept; Penns keeps trying.", actionTitle: nil, action: nil)
     }
 
     private func refreshArchive() {
