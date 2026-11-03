@@ -1,0 +1,137 @@
+# ─────────────────────────────────────────────────────────────
+# Penns — Swift / Xcode / macOS / iOS
+# ─────────────────────────────────────────────────────────────
+
+# ── macOS ────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# ── Build output ─────────────────────────────────────────────
+build/
+Build/
+DerivedData/
+*.build/
+*.o
+*.dSYM
+*.dSYM.zip
+*.ipa
+*.xcarchive
+*.app
+*.appex
+Products/
+
+# ── Xcode user state ─────────────────────────────────────────
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+*.xccheckout
+*.xcscmblueprint
+*.moved-aside
+*.hmap
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.xcworkspace/xcuserdata/
+**/xcshareddata/WorkspaceSettings.xcsettings
+IDEWorkspaceChecks.plist
+# Keep shared schemes (Penns.xcscheme) committed
+!xcshareddata/xcschemes/
+
+# ── Xcode test & profiling results ───────────────────────────
+*.xcresult
+*.trace
+*.gcno
+*.gcda
+*.profraw
+*.profdata
+TestResults/
+test_output/
+fastlane/test_output/
+
+# ── Swift Package Manager ────────────────────────────────────
+.build/
+.swiftpm/
+Packages/*/.build/
+Packages/*/.swiftpm/
+# Package.resolved: committed for the app (reproducible builds),
+# ignored inside the local library package.
+Packages/*/Package.resolved
+
+# ── CocoaPods / Carthage (not used, guard anyway) ────────────
+Pods/
+Carthage/Build/
+Carthage/Checkouts/
+
+# ── Code signing & secrets ───────────────────────────────────
+*.mobileprovision
+*.provisionprofile
+*.p12
+*.cer
+*.certSigningRequest
+*.keychain
+*.keychain-db
+AuthKey_*.p8
+*.p8
+.env
+.env.*
+!.env.example
+Secrets.xcconfig
+*.local.xcconfig
+ExportOptions.plist
+
+# ── Fastlane ─────────────────────────────────────────────────
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/README.md
+
+# ── StoreKit local testing ───────────────────────────────────
+# Keep *.storekit configurations; ignore transaction databases
+*.storekit-transactions
+
+# ── Playgrounds & docs output ────────────────────────────────
+timeline.xctimeline
+playground.xcworkspace
+.docc-build/
+*.doccarchive
+
+# ── Editors & tools ──────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+.sourcekit-lsp/
+.swiftlint-cache/
+.periphery/
+compile_commands.json
+
+# ── Logs & crash reports ─────────────────────────────────────
+*.log
+*.crash
+*.ips
+
+# ── Claude Code local settings ───────────────────────────────
+.claude/settings.local.json
